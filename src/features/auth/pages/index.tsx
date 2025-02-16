@@ -20,7 +20,6 @@ export default function AuthScreen() {
             value={alignValue}
             onChange={(value) => setAlignValue(value as Align)}
             options={["Login", "Cadastro"]}
-            className="bg-gray-100 rounded-lg"
             size="large"
           />
         </div>
