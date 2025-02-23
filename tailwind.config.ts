@@ -8,6 +8,8 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
         primary: "#0066cc",
+        lightBlue: "#bfdfff",
+        colorError: "#ff3410",
         fillSecondary: "#f8fafd",
         success: "#00cc66",
         warning: "#ff9933",

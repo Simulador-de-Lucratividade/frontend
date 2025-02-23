@@ -36,6 +36,7 @@ export default function RootLayout({
               colorFillSecondary: "#ecf4ff",
               colorSuccess: "#00cc66",
               colorWarning: "#ff9933",
+              colorError: "#ff3410",
 
               colorTextBase: "#333333",
               colorBgContainer: "#ffffff",
@@ -53,7 +54,7 @@ export default function RootLayout({
                 defaultHoverBorderColor: "#0052a3",
               },
               Menu: {
-                colorItemBg: "#ffffff",
+                itemBg: "#ffffff",
                 itemColor: "#333333",
                 itemSelectedBg: "#0052a3",
                 itemSelectedColor: "#ffffff",

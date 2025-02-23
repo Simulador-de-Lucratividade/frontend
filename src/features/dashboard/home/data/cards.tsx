@@ -2,36 +2,36 @@ import { ReactNode } from "react";
 import { AiOutlineProduct } from "react-icons/ai";
 import { BsFileEarmarkPlus, BsPerson, BsBriefcase } from "react-icons/bs";
 
-interface CardProps {
-  key: number;
+export interface CardProps {
+  id: number;
   title: string;
   icon: ReactNode;
-  goTo: string;
+  redirect: string;
 }
 
 export const cards: CardProps[] = [
   {
-    key: 1,
+    id: 1,
     title: "Novo orçamento",
     icon: <BsFileEarmarkPlus size={20} />,
-    goTo: "/auth",
+    redirect: "/auth",
   },
   {
-    key: 2,
+    id: 2,
     title: "Cadastrar cliente",
     icon: <BsPerson size={20} />,
-    goTo: "/auth",
+    redirect: "/auth",
   },
   {
-    key: 3,
+    id: 3,
     title: "Cadastrar produto",
     icon: <AiOutlineProduct size={20} />,
-    goTo: "/auth",
+    redirect: "/auth",
   },
   {
-    key: 4,
+    id: 4,
     title: "Novo serviço",
     icon: <BsBriefcase size={20} />,
-    goTo: "/auth",
+    redirect: "/auth",
   },
 ];
