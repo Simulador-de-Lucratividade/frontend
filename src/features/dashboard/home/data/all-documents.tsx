@@ -1,4 +1,4 @@
-import { Document } from "../../interfaces/IDocument";
+import { Document } from "../../../settings/interfaces/IDocument";
 
 export const documents: Document[] = [
   {

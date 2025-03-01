@@ -3,10 +3,10 @@ import { cards } from "../data/cards";
 import { ApplicationLayout } from "@/shared/components/application-layout";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { ActionCard } from "../components/action-card";
-import { Section } from "../../components/section";
-import { documents } from "../data/all-documents";
+import { Section } from "@/features/settings/components/section";
+import { DocumentCard } from "@/features/settings/components/document-card";
 import { DocumentList } from "../components/document-list";
-import { DocumentCard } from "../../components/document-card";
+import { documents } from "../data/all-documents";
 
 export default function HomeScreen() {
   return (

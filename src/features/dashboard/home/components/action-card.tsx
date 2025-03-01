@@ -1,7 +1,7 @@
 import type React from "react";
 import { Button } from "antd";
 import { FiPlus } from "react-icons/fi";
-import type { CardProps } from "../data/cards";
+import { CardProps } from "../data/cards";
 
 export const ActionCard: React.FC<CardProps> = ({ title, icon }) => {
   return (

@@ -5,8 +5,8 @@ import type React from "react";
 import { Input, Spin } from "antd";
 import { motion } from "framer-motion";
 import { FiSearch } from "react-icons/fi";
-import { Document } from "../../interfaces/IDocument";
-import { DocumentCard } from "../../components/document-card";
+import { DocumentCard } from "@/features/settings/components/document-card";
+import { Document } from "@/features/settings/interfaces/IDocument";
 
 interface DocumentListProps {
   documents: Document[];

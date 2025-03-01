@@ -10,9 +10,9 @@ import {
 } from "@ant-design/icons";
 import { ApplicationLayout } from "@/shared/components/application-layout";
 import { ProtectedRoute } from "@/shared/components/protected-route";
-import { Section } from "@/features/dashboard/components/section";
-import { DocumentCard } from "../../components/document-card";
 import { useRouter } from "next/navigation";
+import { Section } from "@/features/settings/components/section";
+import { DocumentCard } from "@/features/settings/components/document-card";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
