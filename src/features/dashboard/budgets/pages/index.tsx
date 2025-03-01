@@ -10,19 +10,19 @@ import {
 } from "@ant-design/icons";
 import { ApplicationLayout } from "@/shared/components/application-layout";
 import { ProtectedRoute } from "@/shared/components/protected-route";
-import { useRouter } from "next/navigation";
 import { Section } from "@/features/settings/components/section";
 import { DocumentCard } from "@/features/settings/components/document-card";
+import { NewBudgetModal } from "../modals/new-budget";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
 export default function BudgetsScreen() {
-  const router = useRouter();
   const screens = useBreakpoint();
 
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>("recent");
+  const [isModalAddVisible, setIsModalAddVisible] = useState<boolean>(false);
 
   const statusOptions = [
     { value: "all", label: "Todos" },
@@ -57,7 +57,7 @@ export default function BudgetsScreen() {
                   type="primary"
                   icon={<PlusOutlined />}
                   size={screens.sm ? "large" : "middle"}
-                  onClick={() => router.push("/orcamentos/criar")}
+                  onClick={() => setIsModalAddVisible(!isModalAddVisible)}
                   block={!screens.md}
                 >
                   Novo orçamento
@@ -127,6 +127,10 @@ export default function BudgetsScreen() {
             </Section>
           </Space>
         </div>
+        <NewBudgetModal
+          isOpen={isModalAddVisible}
+          onClose={() => setIsModalAddVisible(false)}
+        />
       </ApplicationLayout>
     </ProtectedRoute>
   );
