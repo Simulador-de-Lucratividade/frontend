@@ -5,7 +5,7 @@ import type React from "react";
 import { Input, Spin } from "antd";
 import { motion } from "framer-motion";
 import { FiSearch } from "react-icons/fi";
-import { DocumentCard } from "@/features/settings/components/document-card";
+import { DocumentCard } from "@/features/dashboard/budgets/components/document-card";
 import { Document } from "@/features/settings/interfaces/IDocument";
 
 interface DocumentListProps {

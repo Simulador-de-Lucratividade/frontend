@@ -11,7 +11,7 @@ import {
 } from "@ant-design/icons";
 import { ApplicationLayout } from "@/shared/components/application-layout";
 import { ProtectedRoute } from "@/shared/components/protected-route";
-import { Section } from "@/features/settings/components/section";
+import { Section } from "@/features/dashboard/budgets/components/section";
 import { ServiceCard } from "../components/service-card";
 import { NewServiceModal } from "../modals/new-service";
 

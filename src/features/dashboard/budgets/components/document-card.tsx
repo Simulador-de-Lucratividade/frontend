@@ -2,7 +2,7 @@ import type React from "react";
 import { Button, Dropdown } from "antd";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FiFileText, FiEdit, FiTrash, FiDownload } from "react-icons/fi";
-import { Document } from "../interfaces/IDocument";
+import { Document } from "../../../settings/interfaces/IDocument";
 import { useRouter } from "next/navigation";
 
 export const DocumentCard: React.FC<Document> = ({ id, title, datetime }) => {

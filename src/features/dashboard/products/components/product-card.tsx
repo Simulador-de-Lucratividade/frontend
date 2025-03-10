@@ -57,10 +57,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const screens = useBreakpoint();
 
   return (
-    <Card
-      hoverable
-      className="w-full transition-all duration-200 px-4 py-3 hover:shadow-md"
-    >
+    <Card className="w-full transition-all duration-200 px-4 py-3">
       <Row
         gutter={[screens.sm ? 16 : 8, 0]}
         align="middle"

@@ -73,10 +73,7 @@ export const ServiceCard = ({ service }: ServiceCardProps) => {
   ];
 
   return (
-    <Card
-      hoverable
-      className="w-full transition-all duration-200 py-1 px-2 md:py-3 md:px-4 hover:shadow-md"
-    >
+    <Card className="w-full transition-all duration-200 py-1 px-2 md:py-3 md:px-4">
       <Row
         gutter={[screens.sm ? 16 : 8, 0]}
         align="middle"

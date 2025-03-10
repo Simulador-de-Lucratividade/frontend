@@ -3,8 +3,8 @@ import { cards } from "../data/cards";
 import { ApplicationLayout } from "@/shared/components/application-layout";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { ActionCard } from "../components/action-card";
-import { Section } from "@/features/settings/components/section";
-import { DocumentCard } from "@/features/settings/components/document-card";
+import { Section } from "@/features/dashboard/budgets/components/section";
+import { DocumentCard } from "@/features/dashboard/budgets/components/document-card";
 import { DocumentList } from "../components/document-list";
 import { documents } from "../data/all-documents";
 

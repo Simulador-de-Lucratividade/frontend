@@ -10,17 +10,15 @@ import {
 } from "@ant-design/icons";
 import { ApplicationLayout } from "@/shared/components/application-layout";
 import { ProtectedRoute } from "@/shared/components/protected-route";
-import { Section } from "@/features/settings/components/section";
-import { DocumentCard } from "@/features/settings/components/document-card";
+import { Section } from "@/features/dashboard/budgets/components/section";
+import { DocumentCard } from "@/features/dashboard/budgets/components/document-card";
 import { NewBudgetModal } from "../modals/new-budget";
-import { useRouter } from "next/navigation";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
 export default function BudgetsScreen() {
   const screens = useBreakpoint();
-  const router = useRouter();
 
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>("recent");
