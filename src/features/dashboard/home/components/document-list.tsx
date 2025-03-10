@@ -6,7 +6,7 @@ import { Input, Spin } from "antd";
 import { motion } from "framer-motion";
 import { FiSearch } from "react-icons/fi";
 import { DocumentCard } from "@/features/dashboard/budgets/components/document-card";
-import { Document } from "@/features/settings/interfaces/IDocument";
+import { Document } from "@/features/dashboard/budgets/interfaces/IDocument";
 
 interface DocumentListProps {
   documents: Document[];
