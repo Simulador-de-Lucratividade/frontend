@@ -3,10 +3,16 @@ import { Button, Dropdown } from "antd";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FiFileText, FiEdit, FiTrash, FiDownload } from "react-icons/fi";
 import { Document } from "../interfaces/IDocument";
+import { useRouter } from "next/navigation";
 
-export const DocumentCard: React.FC<Document> = ({ title, datetime }) => {
+export const DocumentCard: React.FC<Document> = ({ id, title, datetime }) => {
+  const router = useRouter();
+
   return (
-    <div className="group flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 bg-white border border-borderSecondary p-3 sm:p-5 rounded-2xl w-full cursor-pointer hover:shadow-lg hover:border-primary/10 transition-all duration-300">
+    <div
+      className="group flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-4 bg-white border border-borderSecondary p-3 sm:p-5 rounded-2xl w-full cursor-pointer hover:shadow-lg hover:border-primary/10 transition-all duration-300"
+      onClick={() => router.push(`/orcamentos/${id}`)}
+    >
       <Button className="py-3 sm:py-6 px-2 sm:px-4 bg-primary/5 border-none text-textBase min-w-[40px] sm:min-w-[48px] group-hover:bg-primary/10 transition-colors shrink-0">
         <FiFileText size={18} className="text-primary" />
       </Button>

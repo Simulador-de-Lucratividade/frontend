@@ -38,7 +38,15 @@ export const NewBudgetModal: React.FC<NewBudgetModalProps> = ({
   const onFinish = () => {};
 
   return (
-    <Modal open={isOpen} onClose={onClose} closeIcon={null} footer={null}>
+    <Modal
+      title="Criar novo orçamento"
+      open={isOpen}
+      onOk={onClose}
+      onCancel={onClose}
+      onClose={onClose}
+      closeIcon={null}
+      footer={null}
+    >
       <Space
         direction="vertical"
         size="large"
@@ -50,6 +58,9 @@ export const NewBudgetModal: React.FC<NewBudgetModalProps> = ({
             layout="vertical"
             onFinish={onFinish}
             requiredMark={false}
+            initialValues={{
+              status: "sent",
+            }}
           >
             <Row gutter={16}>
               <Col xs={24} sm={12}>
@@ -162,7 +173,7 @@ export const NewBudgetModal: React.FC<NewBudgetModalProps> = ({
                     },
                   ]}
                 >
-                  <Select defaultValue={"sent"}>
+                  <Select>
                     <Select.Option value="draft">Rascunho</Select.Option>
                     <Select.Option value="sent">Enviado</Select.Option>
                     <Select.Option value="approved">Aprovado</Select.Option>

@@ -95,11 +95,7 @@ export const CustomerCard = ({ customer }: CustomerCardProps) => {
   };
 
   return (
-    <Card
-      hoverable
-      className="w-full overflow-hidden"
-      style={{ padding: screens.sm ? 16 : 12 }}
-    >
+    <Card hoverable className="w-full overflow-hidden">
       <Row gutter={[16, 16]} align="middle">
         <Col xs={24} sm={16} md={18} lg={20}>
           <Row gutter={[16, 8]} align="middle">

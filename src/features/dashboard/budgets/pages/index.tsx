@@ -13,12 +13,14 @@ import { ProtectedRoute } from "@/shared/components/protected-route";
 import { Section } from "@/features/settings/components/section";
 import { DocumentCard } from "@/features/settings/components/document-card";
 import { NewBudgetModal } from "../modals/new-budget";
+import { useRouter } from "next/navigation";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
 export default function BudgetsScreen() {
   const screens = useBreakpoint();
+  const router = useRouter();
 
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>("recent");
@@ -101,18 +103,22 @@ export default function BudgetsScreen() {
               <Space direction="vertical" size="middle" className="w-full">
                 {[
                   {
+                    id: 1,
                     title: "Orçamento para Empresa A",
                     datetime: "15/02/2024 | 18:39",
                   },
                   {
+                    id: 2,
                     title: "Orçamento para Empresa B",
                     datetime: "16/02/2024 | 14:20",
                   },
                   {
+                    id: 3,
                     title: "Orçamento para Empresa C",
                     datetime: "17/02/2024 | 09:15",
                   },
                   {
+                    id: 4,
                     title: "Orçamento para Empresa D",
                     datetime: "17/02/2024 | 11:30",
                   },
