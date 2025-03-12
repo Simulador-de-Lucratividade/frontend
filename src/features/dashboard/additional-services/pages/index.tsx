@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Input, Select, Button, Typography, Space, Row, Col, Grid } from "antd";
+import {
+  Input,
+  Select,
+  Button,
+  Typography,
+  Space,
+  Row,
+  Col,
+  Grid,
+  Spin,
+} from "antd";
 import {
   SearchOutlined,
   FilterOutlined,
@@ -14,6 +24,8 @@ import { ProtectedRoute } from "@/shared/components/protected-route";
 import { Section } from "@/features/dashboard/budgets/components/section";
 import { ServiceCard } from "../components/service-card";
 import { NewServiceModal } from "../modals/new-service";
+import { useServices } from "../hooks/useServices";
+import { LoadingOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -43,57 +55,13 @@ export default function ServicesScreen() {
     { value: "name_asc", label: "Nome (A-Z)" },
   ];
 
-  const services = [
-    {
-      id: 1,
-      name: "Consultoria em Gestão de Projetos",
-      code: "CONS-001",
-      price: 250.0,
-      category: "consulting",
-      description: "Consultoria especializada em gestão de projetos",
-    },
-    {
-      id: 2,
-      name: "Manutenção Preventiva de Sistemas",
-      code: "MAN-002",
-      price: 180.0,
-      category: "maintenance",
-      description: "Serviço mensal de manutenção preventiva",
-    },
-    {
-      id: 3,
-      name: "Desenvolvimento de Software Personalizado",
-      code: "DEV-003",
-      price: 350.0,
-      category: "development",
-      description: "Desenvolvimento de soluções sob medida",
-    },
-    {
-      id: 4,
-      name: "Suporte Técnico Premium",
-      code: "SUP-004",
-      price: 120.0,
-      category: "support",
-      description: "Suporte técnico especializado 24/7",
-    },
-    {
-      id: 5,
-      name: "Treinamento em Novas Tecnologias",
-      code: "TRN-005",
-      price: 200.0,
-      category: "training",
-      description: "Capacitação em tecnologias emergentes",
-    },
-  ];
+  const { services, serviceLoading, serviceRefresh } = useServices();
 
   const filteredServices = services.filter((service) => {
-    const matchesSearch =
-      service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" || service.category === selectedCategory;
-
-    return matchesSearch && matchesCategory;
+    const matchesSearch = service.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    return matchesSearch;
   });
 
   const sortedServices = [...filteredServices].sort((a, b) => {
@@ -101,9 +69,9 @@ export default function ServicesScreen() {
       case "name_asc":
         return a.name.localeCompare(b.name);
       case "price_asc":
-        return a.price - b.price;
+        return a.cost - b.cost;
       case "price_desc":
-        return b.price - a.price;
+        return b.cost - a.cost;
       case "oldest":
         return 1;
       default:
@@ -176,19 +144,29 @@ export default function ServicesScreen() {
 
             <Section title="">
               <Space direction="vertical" size="middle" className="w-full">
-                {sortedServices.length > 0 ? (
-                  sortedServices.map((service) => (
-                    <ServiceCard key={service.id} service={service} />
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <Space direction="vertical" align="center">
-                      <AppstoreOutlined
-                        style={{ fontSize: 48, opacity: 0.5 }}
-                      />
-                      <Text type="secondary">Nenhum serviço encontrado</Text>
-                    </Space>
+                {serviceLoading ? (
+                  <div className="flex justify-center items-center">
+                    <Spin indicator={<LoadingOutlined />} />
                   </div>
+                ) : (
+                  <>
+                    {sortedServices.length > 0 ? (
+                      sortedServices.map((service) => (
+                        <ServiceCard key={service.id} {...service} />
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <Space direction="vertical" align="center">
+                          <AppstoreOutlined
+                            style={{ fontSize: 48, opacity: 0.5 }}
+                          />
+                          <Text type="secondary">
+                            Nenhum serviço encontrado
+                          </Text>
+                        </Space>
+                      </div>
+                    )}
+                  </>
                 )}
               </Space>
             </Section>
@@ -197,6 +175,7 @@ export default function ServicesScreen() {
         <NewServiceModal
           isOpen={isModalAddVisible}
           onClose={() => setIsModalAddVisible(false)}
+          serviceRefresh={serviceRefresh}
         />
       </ApplicationLayout>
     </ProtectedRoute>

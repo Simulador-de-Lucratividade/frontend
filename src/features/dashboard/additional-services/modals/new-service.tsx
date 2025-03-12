@@ -3,26 +3,31 @@ import {
   Modal,
   Form,
   Input,
-  Select,
   Button,
   Row,
   Col,
-  Divider,
   Typography,
+  notification,
 } from "antd";
-import { TagOutlined } from "@ant-design/icons";
 import Masks from "@/shared/utils/masks";
+import { additionalServicesService } from "../services/services.service";
+import { AxiosError, AxiosResponse } from "axios";
+import { ICreateServiceResponse } from "../interface/IServices";
 
 const { Title } = Typography;
 const { TextArea } = Input;
-const { Option } = Select;
 
 interface NewServiceModalProps {
   isOpen: boolean;
   onClose: () => void;
+  serviceRefresh: () => void;
 }
 
-export const NewServiceModal = ({ isOpen, onClose }: NewServiceModalProps) => {
+export const NewServiceModal = ({
+  isOpen,
+  onClose,
+  serviceRefresh,
+}: NewServiceModalProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
@@ -30,25 +35,57 @@ export const NewServiceModal = ({ isOpen, onClose }: NewServiceModalProps) => {
     (value: string | number | null) => {
       if (value === null) return;
       const formattedValue = Masks.money(value.toString());
-      form.setFieldsValue({ price: formattedValue });
+      form.setFieldsValue({ cost: formattedValue });
     },
     [form]
   );
 
-  const handleSubmit = async () => {
-    try {
-      setLoading(true);
-      await form.validateFields();
-      const values = form.getFieldsValue();
-      console.log("Form values:", values);
+  const parseMoney = (value: string): number => {
+    return parseFloat(value.replace(/[^\d,]/g, "").replace(",", "."));
+  };
 
-      form.resetFields();
-      onClose();
-    } catch (error) {
-      console.error("Validation failed:", error);
-    } finally {
-      setLoading(false);
-    }
+  const handleSubmit = async () => {
+    await form.validateFields();
+    const values = form.getFieldsValue();
+
+    if (loading || !values) return;
+
+    setLoading(true);
+
+    const parsedCost = parseMoney(values.cost);
+
+    additionalServicesService
+      .create({
+        name: values.name,
+        cost: parsedCost,
+        description: values.description,
+      })
+      .then((res: AxiosResponse<ICreateServiceResponse>) => {
+        notification.success({
+          message: "Serviço cadastrado com sucesso",
+          description: `O serviço ${res.data.service.name} foi cadastrado com sucesso!`,
+        });
+        onClose();
+        serviceRefresh();
+      })
+      .catch((error) => {
+        if (error instanceof AxiosError) {
+          const errorMessage = error.response?.data?.message || error.message;
+          notification.error({
+            message: "Falha ao cadastrar serviço",
+            description: errorMessage,
+          });
+        } else {
+          notification.error({
+            message: "Falha ao cadastrar o serviço",
+            description:
+              "Ocorreu um erro inesperado. Tente novamente mais tarde.",
+          });
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (
@@ -93,38 +130,12 @@ export const NewServiceModal = ({ isOpen, onClose }: NewServiceModalProps) => {
               <Input placeholder="Nome do serviço" />
             </Form.Item>
           </Col>
-          <Col xs={24} md={8}>
-            <Form.Item
-              name="code"
-              label="Código"
-              rules={[
-                { required: true, message: "Por favor, informe o código" },
-              ]}
-            >
-              <Input prefix={<TagOutlined />} placeholder="SRV-001" />
-            </Form.Item>
-          </Col>
         </Row>
 
         <Row gutter={16}>
           <Col xs={24} md={12}>
             <Form.Item
-              name="category"
-              label="Categoria"
-              rules={[{ required: true, message: "Selecione a categoria" }]}
-            >
-              <Select placeholder="Selecione a categoria">
-                <Option value="consulting">Consultoria</Option>
-                <Option value="maintenance">Manutenção</Option>
-                <Option value="development">Desenvolvimento</Option>
-                <Option value="support">Suporte</Option>
-                <Option value="training">Treinamento</Option>
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item
-              name="price"
+              name="cost"
               label="Preço (R$)"
               rules={[
                 { required: true, message: "Por favor, informe o preço" },
@@ -150,33 +161,6 @@ export const NewServiceModal = ({ isOpen, onClose }: NewServiceModalProps) => {
           ]}
         >
           <TextArea rows={4} placeholder="Descreva os detalhes do serviço" />
-        </Form.Item>
-
-        <Divider />
-
-        <Row gutter={16}>
-          <Col xs={24} md={12}>
-            <Form.Item name="duration" label="Duração estimada">
-              <Input placeholder="Ex: 2 horas, 1 semana, etc" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item name="unit" label="Unidade de cobrança">
-              <Select placeholder="Selecione a unidade">
-                <Option value="hour">Por hora</Option>
-                <Option value="project">Por projeto</Option>
-                <Option value="monthly">Mensal</Option>
-                <Option value="daily">Diária</Option>
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Form.Item name="requirements" label="Requisitos ou observações">
-          <TextArea
-            rows={3}
-            placeholder="Requisitos específicos ou observações importantes"
-          />
         </Form.Item>
       </Form>
     </Modal>

@@ -3,7 +3,6 @@ import {
   Row,
   Col,
   Typography,
-  Tag,
   Space,
   Button,
   Dropdown,
@@ -12,36 +11,13 @@ import {
 import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { IService } from "../interface/IServices";
 
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
 
-interface ServiceType {
-  id: number;
-  name: string;
-  code: string;
-  price: number;
-  category: string;
-  description: string;
-}
-
-interface ServiceCardProps {
-  service: ServiceType;
-}
-
-export const ServiceCard = ({ service }: ServiceCardProps) => {
+export const ServiceCard = (service: IService) => {
   const screens = useBreakpoint();
-
-  const getCategoryLabel = (category: string) => {
-    const categories = {
-      consulting: "Consultoria",
-      maintenance: "Manutenção",
-      development: "Desenvolvimento",
-      support: "Suporte",
-      training: "Treinamento",
-    };
-    return categories[category as keyof typeof categories] || category;
-  };
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString("pt-BR", {
@@ -101,22 +77,8 @@ export const ServiceCard = ({ service }: ServiceCardProps) => {
                 type="secondary"
                 className={screens.sm ? "text-sm" : "text-xs"}
               >
-                {service.code}
-              </Text>
-              <Text
-                type="secondary"
-                className={screens.sm ? "text-sm" : "text-xs"}
-              >
                 •
               </Text>
-              <Tag
-                className={`
-                  m-0 border-none bg-gray-50 text-gray-600
-                  ${screens.sm ? "text-sm" : "text-xs"}
-                `}
-              >
-                {getCategoryLabel(service.category)}
-              </Tag>
             </Space>
           </Space>
         </Col>
@@ -135,7 +97,7 @@ export const ServiceCard = ({ service }: ServiceCardProps) => {
             }`}
           >
             <Text strong className={screens.sm ? "text-base" : "text-sm"}>
-              {formatCurrency(service.price)}
+              {formatCurrency(service.cost)}
             </Text>
             <Dropdown
               menu={{ items: dropdownItems }}

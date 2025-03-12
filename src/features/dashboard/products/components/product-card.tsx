@@ -17,20 +17,9 @@ import {
   DeleteOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
+import { IProduct } from "../interface/IProduct";
 
 const { Text } = Typography;
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  price: number;
-  category: string;
-}
-
-interface ProductCardProps {
-  product: Product;
-}
 
 const { useBreakpoint } = Grid;
 
@@ -53,7 +42,7 @@ const dropdownItems: MenuProps["items"] = [
   },
 ];
 
-export const ProductCard = ({ product }: ProductCardProps) => {
+export const ProductCard = (product: IProduct) => {
   const screens = useBreakpoint();
 
   return (
@@ -85,7 +74,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 type="secondary"
                 className={screens.sm ? "text-sm" : "text-xs"}
               >
-                {product.sku}
+                {product.reference_code}
               </Text>
               <Text
                 type="secondary"
@@ -99,7 +88,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                   ${screens.sm ? "text-sm" : "text-xs"}
                 `}
               >
-                {product.category}
+                Produtos
               </Tag>
             </Space>
           </Space>
@@ -119,7 +108,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             }`}
           >
             <Text strong className={screens.sm ? "text-base" : "text-sm"}>
-              {product.price}
+              {product.acquisition_cost}
             </Text>
             <Dropdown
               menu={{ items: dropdownItems }}

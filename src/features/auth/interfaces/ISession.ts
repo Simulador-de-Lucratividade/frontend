@@ -4,7 +4,7 @@ export interface ILogin {
 }
 
 export interface ILoginResponse {
-  success: true;
+  success: boolean;
   login: {
     user: {
       name: string;
