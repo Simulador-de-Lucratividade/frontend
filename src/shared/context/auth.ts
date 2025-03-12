@@ -1,32 +1,32 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface AuthStore {
+export interface User {
+  accessToken: string;
+  refreshToken?: string;
+  userData?: {
+    name: string;
+    email: string;
+  };
+}
+
+interface AuthState {
+  user?: User;
   isLoggedIn: boolean;
-  login: () => void;
+  setUser: (user: User) => void;
   logout: () => void;
 }
 
-const useAuthStore = create(
-  persist<AuthStore>(
+export const useAuthStore = create<AuthState>()(
+  persist(
     (set) => ({
+      user: undefined,
       isLoggedIn: false,
-      login: () => {
-        // const userLocalStorage = localStorage.getItem("accessToken");
-        // if (userLocalStorage) {
-        //   set({ isLoggedIn: true });
-        // }
-        set({ isLoggedIn: true });
-      },
-      logout: () => {
-        set({ isLoggedIn: false });
-        localStorage.clear();
-      },
+      setUser: (user: User) => set({ user, isLoggedIn: true }),
+      logout: () => set({ user: undefined, isLoggedIn: false }),
     }),
     {
-      name: "userLoginStatus",
+      name: "auth-store",
     }
   )
 );
-
-export default useAuthStore;

@@ -1,7 +1,12 @@
 import { Button, Form, FormInstance, Input, notification, theme } from "antd";
 import { LockOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
-import useAuthStore from "@/shared/context/auth";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { sessionService } from "../services/session.service";
+import { AxiosError, AxiosResponse } from "axios";
+import { ILoginResponse } from "../interfaces/ISession";
+import { useAuthStore } from "@/shared/context/auth";
+import Masks from "@/shared/utils/masks";
 
 export type RegisterFormValues = {
   name: string;
@@ -16,16 +21,73 @@ interface RegisterFormProps {
 
 export const RegisterForm: React.FC<RegisterFormProps> = ({ registerForm }) => {
   const router = useRouter();
-
   const { token } = theme.useToken();
-  const { login } = useAuthStore();
+
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleDocument = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "");
+
+    let maskedValue = "";
+    if (value.length <= 11) {
+      maskedValue = Masks.cpf(value);
+    } else {
+      maskedValue = Masks.cnpj(value);
+    }
+
+    registerForm.setFieldValue("document", maskedValue);
+  };
 
   const handleRegisterSubmit = async () => {
-    login();
-    router.push("/");
-    notification.success({
-      message: "Registro realizado com sucesso!",
-    });
+    const values = await registerForm.validateFields();
+
+    if (loading || !values) return;
+
+    setLoading(true);
+
+    sessionService
+      .register({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        document: values.document,
+      })
+      .then(() => {
+        notification.success({
+          message: "Registro realizado com sucesso!",
+        });
+        return sessionService.login({
+          email: values.email,
+          password: values.password,
+        });
+      })
+      .then((res: AxiosResponse<ILoginResponse>) => {
+        useAuthStore.getState().setUser({
+          accessToken: res.data.login.token,
+          refreshToken: res.data.login.refreshToken,
+          userData: res.data.login.user,
+        });
+
+        router.push("/");
+      })
+      .catch((error) => {
+        if (error instanceof AxiosError) {
+          const errorMessage = error.response?.data?.message || error.message;
+          notification.error({
+            message: "Falha no registro",
+            description: errorMessage,
+          });
+        } else {
+          notification.error({
+            message: "Falha no registro",
+            description:
+              "Ocorreu um erro inesperado. Tente novamente mais tarde.",
+          });
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (
@@ -43,6 +105,18 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ registerForm }) => {
           prefix={<UserOutlined className="text-gray-400" />}
           placeholder="Nome completo"
           size="large"
+        />
+      </Form.Item>
+
+      <Form.Item
+        name="document"
+        rules={[{ required: false, message: "Por favor, insira um documento" }]}
+      >
+        <Input
+          prefix={<UserOutlined className="text-gray-400" />}
+          placeholder="Documento (CPF ou CNPJ)"
+          size="large"
+          onChange={handleDocument}
         />
       </Form.Item>
 
