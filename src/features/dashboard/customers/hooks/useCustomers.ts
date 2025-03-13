@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
-import { IGetAllProductsResponse, IProduct } from "../interface/IProduct";
-import { productService } from "../services/product.service";
 import { AxiosError, AxiosResponse } from "axios";
 import { notification } from "antd";
+import { ICustomer, IGetAllCustomersResponse } from "../interface/ICustomer";
+import { customerService } from "../services/customer.service";
 
-interface IProductResponse {
-  products: IProduct[];
-  productLoading: boolean;
-  productRefresh: () => void;
+interface ICustomerResponse {
+  customers: ICustomer[];
+  customerLoading: boolean;
+  customerRefresh: () => void;
 }
 
-export const useProducts = (): IProductResponse => {
-  const [products, setProducts] = useState<IProduct[]>([]);
+export const useCustomers = (): ICustomerResponse => {
+  const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   const fetchData = () => {
@@ -19,21 +19,21 @@ export const useProducts = (): IProductResponse => {
 
     setLoading(true);
 
-    productService
+    customerService
       .list()
-      .then((res: AxiosResponse<IGetAllProductsResponse>) =>
-        setProducts(res.data.product)
+      .then((res: AxiosResponse<IGetAllCustomersResponse>) =>
+        setCustomers(res.data.customer)
       )
       .catch((error) => {
         if (error instanceof AxiosError) {
           const errorMessage = error.response?.data?.message || error.message;
           notification.error({
-            message: "Falha ao listar produto",
+            message: "Falha ao buscar clientes",
             description: errorMessage,
           });
         } else {
           notification.error({
-            message: "Falha ao listar o produto",
+            message: "Falha ao buscar clientes",
             description:
               "Ocorreu um erro inesperado. Tente novamente mais tarde.",
           });
@@ -49,8 +49,8 @@ export const useProducts = (): IProductResponse => {
   }, []);
 
   return {
-    products,
-    productLoading: loading,
-    productRefresh: fetchData,
+    customers,
+    customerLoading: loading,
+    customerRefresh: fetchData,
   };
 };

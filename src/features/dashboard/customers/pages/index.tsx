@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Input, Select, Button, Typography, Space, Row, Col, Grid } from "antd";
+import {
+  Input,
+  Select,
+  Button,
+  Typography,
+  Space,
+  Row,
+  Col,
+  Grid,
+  Spin,
+} from "antd";
 import {
   SearchOutlined,
   FilterOutlined,
@@ -14,6 +24,8 @@ import { ProtectedRoute } from "@/shared/components/protected-route";
 import { Section } from "@/features/dashboard/budgets/components/section";
 import { CustomerCard } from "../components/customer-card";
 import { NewCustomerModal } from "../modals/new-customer";
+import { useCustomers } from "../hooks/useCustomers";
+import { LoadingOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -40,53 +52,14 @@ export default function CustomerScreen() {
     { value: "lastContact", label: "Último contato" },
   ];
 
-  const customers = [
-    {
-      id: 1,
-      name: "Empresa Alpha Tecnologia",
-      email: "contato@alphatec.com",
-      phone: "(11) 98765-4321",
-      status: "active",
-      lastContact: "18/03/2024",
-      type: "Corporativo",
-    },
-    {
-      id: 2,
-      name: "Beta Comércio Ltda",
-      email: "financeiro@betacomercio.com",
-      phone: "(21) 97654-3210",
-      status: "inactive",
-      lastContact: "10/03/2024",
-      type: "Varejo",
-    },
-    {
-      id: 3,
-      name: "Gamma Serviços S.A.",
-      email: "atendimento@gammaservicos.com",
-      phone: "(31) 96543-2109",
-      status: "active",
-      lastContact: "15/03/2024",
-      type: "Serviços",
-    },
-    {
-      id: 4,
-      name: "Delta Indústria",
-      email: "vendas@deltaindustria.com",
-      phone: "(41) 95432-1098",
-      status: "prospect",
-      lastContact: "05/03/2024",
-      type: "Industrial",
-    },
-  ];
+  const { customers, customerLoading, customerRefresh } = useCustomers();
 
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch =
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      selectedStatus === "all" || customer.status === selectedStatus;
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   const sortedCustomers = [...filteredCustomers].sort((a, b) => {
@@ -169,17 +142,29 @@ export default function CustomerScreen() {
 
             <Section title="">
               <Space direction="vertical" size="middle" className="w-full">
-                {sortedCustomers.length > 0 ? (
-                  sortedCustomers.map((customer) => (
-                    <CustomerCard key={customer.id} customer={customer} />
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <Space direction="vertical" align="center">
-                      <UserOutlined style={{ fontSize: 48, opacity: 0.5 }} />
-                      <Text type="secondary">Nenhum cliente encontrado</Text>
-                    </Space>
+                {customerLoading ? (
+                  <div className="flex justify-center items-center">
+                    <Spin indicator={<LoadingOutlined />} />
                   </div>
+                ) : (
+                  <>
+                    {sortedCustomers.length > 0 ? (
+                      sortedCustomers.map((customer) => (
+                        <CustomerCard key={customer.id} {...customer} />
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <Space direction="vertical" align="center">
+                          <UserOutlined
+                            style={{ fontSize: 48, opacity: 0.5 }}
+                          />
+                          <Text type="secondary">
+                            Nenhum cliente encontrado
+                          </Text>
+                        </Space>
+                      </div>
+                    )}
+                  </>
                 )}
               </Space>
             </Section>
@@ -188,6 +173,7 @@ export default function CustomerScreen() {
         <NewCustomerModal
           isOpen={isModalAddVisible}
           onClose={() => setIsModalAddVisible(false)}
+          customerRefresh={customerRefresh}
         />
       </ApplicationLayout>
     </ProtectedRoute>

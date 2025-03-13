@@ -20,53 +20,14 @@ import {
 import type { MenuProps } from "antd";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useRouter } from "next/navigation";
+import { ICustomer } from "../interface/ICustomer";
 
 const { Text, Title } = Typography;
 const { useBreakpoint } = Grid;
 
-interface CustomerType {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  status: string;
-  lastContact: string;
-  type: string;
-}
-
-interface CustomerCardProps {
-  customer: CustomerType;
-}
-
-export const CustomerCard = ({ customer }: CustomerCardProps) => {
+export const CustomerCard = (customer: ICustomer) => {
   const screens = useBreakpoint();
   const router = useRouter();
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "success";
-      case "inactive":
-        return "default";
-      case "prospect":
-        return "processing";
-      default:
-        return "default";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "active":
-        return "Ativo";
-      case "inactive":
-        return "Inativo";
-      case "prospect":
-        return "Prospecto";
-      default:
-        return status;
-    }
-  };
 
   const dropdownItems: MenuProps["items"] = [
     {
@@ -124,10 +85,8 @@ export const CustomerCard = ({ customer }: CustomerCardProps) => {
                       {customer.name}
                     </Title>
                     <Space size="small" wrap>
-                      <Tag color={getStatusColor(customer.status)}>
-                        {getStatusLabel(customer.status)}
-                      </Tag>
-                      <Tag color="blue">{customer.type}</Tag>
+                      <Tag color={"success"}>Ativo</Tag>
+                      <Tag color="blue">Industrial</Tag>
                     </Space>
                   </div>
 
@@ -142,7 +101,7 @@ export const CustomerCard = ({ customer }: CustomerCardProps) => {
                     </Space>
                     <Space size="small">
                       <Text type="secondary">Último contato:</Text>
-                      <Text>{customer.lastContact}</Text>
+                      <Text>00/00/0000</Text>
                     </Space>
                   </Space>
                 </Space>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Modal,
   Form,
@@ -9,6 +9,7 @@ import {
   Col,
   Divider,
   Typography,
+  notification,
 } from "antd";
 import {
   UserOutlined,
@@ -16,6 +17,10 @@ import {
   PhoneOutlined,
   HomeOutlined,
 } from "@ant-design/icons";
+import { customerService } from "../services/customer.service";
+import { AxiosError, AxiosResponse } from "axios";
+import { ICustomerResponse } from "../interface/ICustomer";
+import Masks from "@/shared/utils/masks";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -23,29 +28,80 @@ const { Option } = Select;
 interface NewCustomerModalProps {
   isOpen: boolean;
   onClose: () => void;
+  customerRefresh: () => void;
 }
 
 export const NewCustomerModal = ({
   isOpen,
   onClose,
+  customerRefresh,
 }: NewCustomerModalProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
-    try {
-      setLoading(true);
-      await form.validateFields();
-      const values = form.getFieldsValue();
-      console.log("Form values:", values);
+  const handlePhoneChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (value === null) return;
+      const formattedValue = Masks.phone(value.toString());
+      form.setFieldsValue({ phone: formattedValue });
+    },
+    [form]
+  );
 
-      form.resetFields();
-      onClose();
-    } catch (error) {
-      console.error("Validation failed:", error);
-    } finally {
-      setLoading(false);
+  const handleDocument = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "");
+
+    let maskedValue = "";
+    if (value.length <= 11) {
+      maskedValue = Masks.cpf(value);
+    } else {
+      maskedValue = Masks.cnpj(value);
     }
+
+    form.setFieldsValue({ document: maskedValue });
+  };
+
+  const handleSubmit = async () => {
+    await form.validateFields();
+    const values = form.getFieldsValue();
+
+    if (loading || !values) return;
+
+    setLoading(true);
+
+    customerService
+      .create({
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+      })
+      .then((res: AxiosResponse<ICustomerResponse>) => {
+        notification.success({
+          message: "Cliente cadastrado com sucesso",
+          description: `O cliente ${res.data.customer.name} foi cadastrado com sucesso!`,
+        });
+        onClose();
+        customerRefresh();
+      })
+      .catch((error) => {
+        if (error instanceof AxiosError) {
+          const errorMessage = error.response?.data?.message || error.message;
+          notification.error({
+            message: "Falha ao cadastrar produto",
+            description: errorMessage,
+          });
+        } else {
+          notification.error({
+            message: "Falha ao cadastrar o produto",
+            description:
+              "Ocorreu um erro inesperado. Tente novamente mais tarde.",
+          });
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (
@@ -132,7 +188,11 @@ export const NewCustomerModal = ({
                 { required: true, message: "Por favor, informe o telefone" },
               ]}
             >
-              <Input prefix={<PhoneOutlined />} placeholder="(00) 00000-0000" />
+              <Input
+                prefix={<PhoneOutlined />}
+                onChange={(e) => handlePhoneChange(e)}
+                placeholder="(00) 00000-0000"
+              />
             </Form.Item>
           </Col>
         </Row>
@@ -153,7 +213,10 @@ export const NewCustomerModal = ({
           </Col>
           <Col xs={24} md={12}>
             <Form.Item name="document" label="CNPJ/CPF">
-              <Input placeholder="00.000.000/0000-00" />
+              <Input
+                placeholder="00.000.000/0000-00"
+                onChange={handleDocument}
+              />
             </Form.Item>
           </Col>
         </Row>
