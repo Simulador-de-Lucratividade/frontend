@@ -3,7 +3,7 @@ export interface IService {
   name: string;
   description: string;
   cost: number;
-  user_id: string;
+  user_id?: string;
 }
 
 export interface ICreateService {

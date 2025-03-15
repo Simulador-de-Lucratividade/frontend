@@ -1,4 +1,4 @@
-import { Document } from "../../budgets/interfaces/IDocument";
+import { Document } from "../../budgets/interfaces/IBudget";
 
 export const documents: Document[] = [
   {

@@ -13,6 +13,7 @@
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "antd": "^5.24.0",
     "axios": "^1.8.2",
+    "dayjs": "^1.11.13",
     "framer-motion": "^12.4.7",
     "next": "15.1.7",
     "react": "^19.0.0",

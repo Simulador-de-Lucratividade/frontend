@@ -2,11 +2,18 @@ import type React from "react";
 import { Button, Dropdown } from "antd";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FiFileText, FiEdit, FiTrash, FiDownload } from "react-icons/fi";
-import { Document } from "../interfaces/IDocument";
+import { IBudget } from "../interfaces/IBudget";
 import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
 
-export const DocumentCard: React.FC<Document> = ({ id, title, datetime }) => {
+export const DocumentCard: React.FC<IBudget> = ({
+  id,
+  customer,
+  created_at,
+}) => {
   const router = useRouter();
+
+  const formattedDate = dayjs(created_at).format("DD/MM/YYYY");
 
   return (
     <div
@@ -19,10 +26,10 @@ export const DocumentCard: React.FC<Document> = ({ id, title, datetime }) => {
 
       <div className="flex-1 min-w-0 order-3 sm:order-2 w-full sm:w-auto">
         <p className="font-medium text-gray-800 text-sm sm:text-base mb-1 sm:mb-2 truncate max-w-full">
-          {title}
+          {customer ? customer.name : "Cliente não encontrado"}
         </p>
         <span className="text-gray-500 text-xs sm:text-sm block truncate">
-          {datetime}
+          {formattedDate}
         </span>
       </div>
 

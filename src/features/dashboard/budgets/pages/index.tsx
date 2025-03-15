@@ -1,18 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { Input, Select, Button, Typography, Space, Row, Col, Grid } from "antd";
+import {
+  Input,
+  Select,
+  Button,
+  Typography,
+  Space,
+  Row,
+  Col,
+  Grid,
+  Spin,
+} from "antd";
 import {
   SearchOutlined,
   FilterOutlined,
   SortAscendingOutlined,
   PlusOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons";
 import { ApplicationLayout } from "@/shared/components/application-layout";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { Section } from "@/features/dashboard/budgets/components/section";
 import { DocumentCard } from "@/features/dashboard/budgets/components/document-card";
 import { NewBudgetModal } from "../modals/new-budget";
+import { useBudgets } from "../hooks/useBudgets";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -37,6 +49,8 @@ export default function BudgetsScreen() {
     { value: "lastWeek", label: "Última semana" },
     { value: "lastMonth", label: "Último mês" },
   ];
+
+  const { budgets, budgetRefresh, budgetLoading } = useBudgets();
 
   return (
     <ProtectedRoute>
@@ -99,34 +113,17 @@ export default function BudgetsScreen() {
 
             <Section title="">
               <Space direction="vertical" size="middle" className="w-full">
-                {[
-                  {
-                    id: 1,
-                    title: "Orçamento para Empresa A",
-                    datetime: "15/02/2024 | 18:39",
-                  },
-                  {
-                    id: 2,
-                    title: "Orçamento para Empresa B",
-                    datetime: "16/02/2024 | 14:20",
-                  },
-                  {
-                    id: 3,
-                    title: "Orçamento para Empresa C",
-                    datetime: "17/02/2024 | 09:15",
-                  },
-                  {
-                    id: 4,
-                    title: "Orçamento para Empresa D",
-                    datetime: "17/02/2024 | 11:30",
-                  },
-                ].map((doc, index) => (
-                  <DocumentCard
-                    key={index}
-                    title={doc.title}
-                    datetime={doc.datetime}
-                  />
-                ))}
+                {budgetLoading ? (
+                  <div>
+                    <Spin indicator={<LoadingOutlined />} />
+                  </div>
+                ) : (
+                  <>
+                    {budgets.map((doc, index) => (
+                      <DocumentCard key={index} {...doc} />
+                    ))}
+                  </>
+                )}
               </Space>
             </Section>
           </Space>
@@ -134,6 +131,7 @@ export default function BudgetsScreen() {
         <NewBudgetModal
           isOpen={isModalAddVisible}
           onClose={() => setIsModalAddVisible(false)}
+          budgetRefresh={budgetRefresh}
         />
       </ApplicationLayout>
     </ProtectedRoute>

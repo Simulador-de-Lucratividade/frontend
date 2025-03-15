@@ -6,44 +6,46 @@ import { ActionCard } from "../components/action-card";
 import { Section } from "@/features/dashboard/budgets/components/section";
 import { DocumentCard } from "@/features/dashboard/budgets/components/document-card";
 import { DocumentList } from "../components/document-list";
-import { documents } from "../data/all-documents";
+import { useBudgets } from "../../budgets/hooks/useBudgets";
+import { Spin } from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
 
 export default function HomeScreen() {
+  const { budgets, budgetLoading } = useBudgets();
   return (
     <ProtectedRoute>
       <ApplicationLayout>
-        <div className="flex flex-col gap-8 sm:gap-16 p-4 sm:p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {cards.map((card) => (
-              <ActionCard
-                icon={card.icon}
-                key={card.id}
-                id={card.id}
-                redirect=""
-                title={card.title}
-              />
-            ))}
+        {budgetLoading ? (
+          <div className="flex items-center justify-center">
+            <Spin indicator={<LoadingOutlined />} size="large" />
           </div>
-          <Section title="Modificados recentemente">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <DocumentCard
-                id="1"
-                title="Climatização do supermercado em Curitiba"
-                datetime="15/02/2024 | 18:39"
-              />
-              <DocumentCard
-                id="2"
-                title="Climatização da igreja de XYZ"
-                datetime="15/02/2024 | 18:39"
-              />
+        ) : (
+          <div className="flex flex-col gap-8 sm:gap-16 p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {cards.map((card) => (
+                <ActionCard
+                  icon={card.icon}
+                  key={card.id}
+                  id={card.id}
+                  redirect=""
+                  title={card.title}
+                />
+              ))}
             </div>
-          </Section>
-          <Section title="Todos os orçamentos">
-            <div className="flex flex-col gap-2">
-              <DocumentList documents={documents} />
-            </div>
-          </Section>
-        </div>
+            <Section title="Modificados recentemente">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {budgets.map((budget) => (
+                  <DocumentCard key={budget.id} {...budget} />
+                ))}
+              </div>
+            </Section>
+            <Section title="Todos os orçamentos">
+              <div className="flex flex-col gap-2">
+                <DocumentList documents={budgets} />
+              </div>
+            </Section>
+          </div>
+        )}
       </ApplicationLayout>
     </ProtectedRoute>
   );

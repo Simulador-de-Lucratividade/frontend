@@ -6,10 +6,10 @@ import { Input, Spin } from "antd";
 import { motion } from "framer-motion";
 import { FiSearch } from "react-icons/fi";
 import { DocumentCard } from "@/features/dashboard/budgets/components/document-card";
-import { Document } from "@/features/dashboard/budgets/interfaces/IDocument";
+import { IBudget } from "@/features/dashboard/budgets/interfaces/IBudget";
 
 interface DocumentListProps {
-  documents: Document[];
+  documents: IBudget[];
   loading?: boolean;
   onSearch?: (value: string) => void;
 }
@@ -50,11 +50,7 @@ export const DocumentList: React.FC<DocumentListProps> = ({
                 transition={{ delay: index * 0.1 }}
                 className="w-full"
               >
-                <DocumentCard
-                  title={doc.title}
-                  datetime={doc.datetime}
-                  id={doc.id}
-                />
+                <DocumentCard {...doc} />
               </motion.div>
             ))}
           </motion.div>
