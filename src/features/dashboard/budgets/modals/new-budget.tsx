@@ -1,8 +1,6 @@
-"use client";
-
 import type React from "react";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   Modal,
   Form,
@@ -35,19 +33,16 @@ import {
   CalculatorOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import Masks from "@/shared/utils/masks";
 import { useProducts } from "../../products/hooks/useProducts";
 import { useCustomers } from "../../customers/hooks/useCustomers";
 import { budgetService } from "../services/budget.service";
-import { profitabilityService } from "../services/profitability.service";
 import { getBudgetItemColumns } from "./columns";
-import type { BudgetItemViewModel } from "../interfaces/IBudget";
-import type {
-  IOtherCost,
-  IProfitabilityRequest,
-} from "../interfaces/IProfitabilityCalculator";
+import type { IOtherCost } from "../interfaces/IProfitabilityCalculator";
 import type { IService } from "../../additional-services/interface/IServices";
 import { useServices } from "../../additional-services/hooks/useServices";
+import { useBudgetItems } from "../hooks/useBudgetItems";
+import { useBudgetCosts } from "../hooks/useBudgetCosts";
+import { useBudgetFinancials } from "../hooks/useBudgetFinancials";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -65,245 +60,39 @@ export const NewBudgetModal = ({
 }: NewBudgetModalProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [budgetItems, setBudgetItems] = useState<BudgetItemViewModel[]>([]);
-  const [otherCosts, setOtherCosts] = useState<IOtherCost[]>([]);
   const [selectedServices, setSelectedServices] = useState<IService[]>([]);
-  const [totalCost, setTotalCost] = useState<number>(0);
-  const [totalValue, setTotalValue] = useState<number>(0);
-  const [profitability, setProfitability] = useState<number | null>(null);
-  const [profitabilityLoading, setProfitabilityLoading] = useState(false);
-  const [suggestedPrice, setSuggestedPrice] = useState<number | null>(null);
-
-  const [costName, setCostName] = useState("");
-  const [costAmount, setCostAmount] = useState<number | null>(null);
-  const [costType, setCostType] = useState<"fixed" | "percentage">("fixed");
 
   const { products } = useProducts();
   const { customers } = useCustomers();
   const { services } = useServices();
 
-  // Calculate total cost whenever items, costs, or services change
-  useEffect(() => {
-    calculateTotalCost();
-  }, [budgetItems, otherCosts, selectedServices]);
-
-  // Calculate profitability whenever total value or total cost changes
-  useEffect(() => {
-    calculateProfitability();
-  }, [totalValue, totalCost]);
-
-  // Calculate the total cost of all items, additional costs, and services
-  const calculateTotalCost = useCallback(() => {
-    // Calculate cost of all product items
-    const itemsCost = budgetItems.reduce(
-      (sum, item) => sum + item.total_price,
-      0
-    );
-
-    // Calculate fixed costs
-    const fixedCosts = otherCosts
-      .filter((cost) => cost.cost_type === "fixed")
-      .reduce((acc, cost) => acc + Number(cost.amount), 0);
-
-    // Calculate percentage-based costs
-    const percentageCosts = otherCosts
-      .filter((cost) => cost.cost_type === "percentage")
-      .reduce((acc, cost) => acc + (itemsCost * Number(cost.amount)) / 100, 0);
-
-    // Calculate service costs
-    const serviceCosts = selectedServices.reduce(
-      (acc, service) => acc + Number(service.cost),
-      0
-    );
-
-    // Sum all costs
-    const newTotalCost =
-      itemsCost + fixedCosts + percentageCosts + serviceCosts;
-    setTotalCost(newTotalCost);
-
-    // Set a suggested price with 20% profit margin if we have costs
-    if (newTotalCost > 0) {
-      const suggested = newTotalCost * 1.2; // 20% profit margin
-      setSuggestedPrice(suggested);
-
-      // If total value hasn't been set by user yet, use the suggested price
-      if (totalValue === 0) {
-        setTotalValue(suggested);
-        form.setFieldsValue({
-          total_value: Masks.money(suggested.toString()),
-        });
-      }
-    } else {
-      setSuggestedPrice(null);
-    }
-  }, [budgetItems, otherCosts, selectedServices, form, totalValue]);
-
-  const calculateProfitability = useCallback(() => {
-    if (budgetItems.length === 0 || totalCost === 0 || totalValue === 0) {
-      setProfitability(null);
-      return;
-    }
-
-    setProfitabilityLoading(true);
-
-    // Formata os itens conforme esperado pela API
-    const formattedItems = budgetItems.map((item) => ({
-      product_id: item.product_id,
-      unit_price: Number(item.unit_price),
-      quantity: Number(item.quantity),
-      total_price: Number(item.total_price),
-      discount: item.discount ? Number(item.discount) : 0,
-    }));
-
-    const formattedCosts = otherCosts.map((cost) => ({
-      id: cost.id,
-      description: cost.description,
-      amount: Number(cost.amount),
-      cost_type: cost.cost_type,
-    }));
-
-    const formattedServices = selectedServices.map((service) => ({
-      id: service.id,
-      name: service.name,
-      description: service.description,
-      cost: Number(service.cost),
-    }));
-
-    const requestPayload: IProfitabilityRequest = {
-      items: formattedItems,
-      total_value: totalValue,
-      other_costs: formattedCosts,
-      services: formattedServices,
-    };
-
-    profitabilityService
-      .calculateProfitability(requestPayload)
-      .then((response) => {
-        if (response.data.success) {
-          setProfitability(response.data.profitability);
-        } else {
-          notification.error({
-            message: "Erro no cálculo de lucratividade",
-            description: "Não foi possível calcular a lucratividade",
-          });
-          setProfitability(null);
-        }
-      })
-      .catch((error) => {
-        console.error("Error calculating profitability:", error);
-
-        const errorMessage =
-          error?.response?.data?.message ||
-          "Ocorreu um erro ao calcular a lucratividade";
-
-        notification.error({
-          message: "Falha no cálculo",
-          description: errorMessage,
-        });
-
-        setProfitability(null);
-      })
-      .finally(() => {
-        setProfitabilityLoading(false);
-      });
-  }, [budgetItems, otherCosts, selectedServices, totalValue, totalCost]);
-
-  const handleAddItem = useCallback(() => {
-    const product_id = form.getFieldValue("product_id");
-    const quantity = form.getFieldValue("quantity") || 1;
-    const discount = form.getFieldValue("discount") || 0;
-
-    if (!product_id) {
-      notification.error({
-        message: "Produto não selecionado",
-        description:
-          "Por favor, selecione um produto para adicionar ao orçamento.",
-      });
-      return;
-    }
-
-    const selectedProduct = products.find((p) => p.id === product_id);
-    if (!selectedProduct) return;
-
-    const unit_price = selectedProduct.acquisition_cost;
-    const total_price = unit_price * quantity - discount;
-
-    const newItem: BudgetItemViewModel = {
-      id: Date.now().toString(),
-      product_name: selectedProduct.name,
-      product_id,
-      unit_price,
-      quantity,
-      total_price,
-      discount: discount || undefined,
-    };
-
-    const newItems = [...budgetItems, newItem];
-    setBudgetItems(newItems);
-
-    form.setFieldsValue({
-      product_id: undefined,
-      quantity: 1,
-      discount: 0,
-    });
-  }, [form, products, budgetItems]);
-
-  const handleRemoveItem = useCallback(
-    (key: string) => {
-      const newItems = budgetItems.filter((item) => item.id !== key);
-      setBudgetItems(newItems);
-    },
-    [budgetItems]
+  const { budgetItems, handleAddItem, handleRemoveItem } = useBudgetItems(
+    products,
+    form
   );
 
-  const handleTotalValueChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      if (!value) {
-        setTotalValue(0);
-        return;
-      }
+  const {
+    otherCosts,
+    costName,
+    setCostName,
+    costAmount,
+    setCostAmount,
+    costType,
+    setCostType,
+    handleAddCost,
+    handleRemoveCost,
+  } = useBudgetCosts();
 
-      // Remove formatting and convert to number
-      const numericValue = Number(value.replace(/[^\d]/g, "")) / 100;
-      setTotalValue(numericValue);
-
-      // Format the value for display
-      const formattedValue = Masks.money(numericValue.toString());
-      form.setFieldsValue({ total_value: formattedValue });
-    },
-    [form]
-  );
-
-  const handleAddCost = useCallback(() => {
-    if (!costName || !costAmount) {
-      notification.error({
-        message: "Dados incompletos",
-        description: "Por favor, preencha o nome e o valor do custo adicional.",
-      });
-      return;
-    }
-
-    const newCost: IOtherCost = {
-      id: Date.now().toString(),
-      description: costName,
-      amount: costAmount,
-      cost_type: costType,
-    };
-
-    setOtherCosts([...otherCosts, newCost]);
-
-    setCostName("");
-    setCostAmount(null);
-    setCostType("fixed");
-  }, [costName, costAmount, costType, otherCosts]);
-
-  const handleRemoveCost = useCallback(
-    (id: string) => {
-      setOtherCosts(otherCosts.filter((cost) => cost.id !== id));
-    },
-    [otherCosts]
-  );
+  const {
+    totalCost,
+    totalValue,
+    profitability,
+    profitabilityLoading,
+    suggestedPrice,
+    handleTotalValueChange,
+    handleUseSuggestedPrice,
+    getProfitabilityColor,
+  } = useBudgetFinancials(budgetItems, otherCosts, selectedServices, form);
 
   const handleServiceSelection = useCallback(
     (serviceIds: string[]) => {
@@ -322,7 +111,6 @@ export const NewBudgetModal = ({
         selectedServices.filter((service) => service.id !== id)
       );
 
-      // Update the form's service_ids field to reflect the removal
       const currentServiceIds = form.getFieldValue("service_ids") || [];
       form.setFieldsValue({
         service_ids: currentServiceIds.filter(
@@ -332,15 +120,6 @@ export const NewBudgetModal = ({
     },
     [selectedServices, form]
   );
-
-  const handleUseSuggestedPrice = useCallback(() => {
-    if (suggestedPrice) {
-      setTotalValue(suggestedPrice);
-      form.setFieldsValue({
-        total_value: Masks.money(suggestedPrice.toString()),
-      });
-    }
-  }, [suggestedPrice, form]);
 
   const handleSubmit = useCallback(() => {
     form
@@ -426,14 +205,6 @@ export const NewBudgetModal = ({
     onClose,
     budgetRefresh,
   ]);
-
-  const getProfitabilityColor = useCallback((value: number | null) => {
-    if (value === null) return "";
-    if (value < 0) return "#f5222d";
-    if (value < 10) return "#faad14";
-    if (value < 20) return "#52c41a";
-    return "#1890ff";
-  }, []);
 
   const columns = getBudgetItemColumns(handleRemoveItem);
 
