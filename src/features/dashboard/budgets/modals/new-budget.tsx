@@ -1,5 +1,3 @@
-import type React from "react";
-
 import { useState, useCallback } from "react";
 import {
   Modal,
@@ -27,22 +25,22 @@ import {
   DollarOutlined,
   PlusOutlined,
   SaveOutlined,
-  DeleteOutlined,
   InfoCircleOutlined,
   PercentageOutlined,
-  CalculatorOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useProducts } from "../../products/hooks/useProducts";
 import { useCustomers } from "../../customers/hooks/useCustomers";
 import { budgetService } from "../services/budget.service";
-import { getBudgetItemColumns } from "./columns";
-import type { IOtherCost } from "../interfaces/IProfitabilityCalculator";
+import { getBudgetItemColumns } from "./columns/budget-item-columns";
 import type { IService } from "../../additional-services/interface/IServices";
 import { useServices } from "../../additional-services/hooks/useServices";
 import { useBudgetItems } from "../hooks/useBudgetItems";
 import { useBudgetCosts } from "../hooks/useBudgetCosts";
 import { useBudgetFinancials } from "../hooks/useBudgetFinancials";
+import Masks from "@/shared/utils/masks";
+import { getServiceColumns } from "./columns/service-columns";
+import { getCostColumns } from "./columns/cost-columns";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -66,10 +64,8 @@ export const NewBudgetModal = ({
   const { customers } = useCustomers();
   const { services } = useServices();
 
-  const { budgetItems, handleAddItem, handleRemoveItem } = useBudgetItems(
-    products,
-    form
-  );
+  const { budgetItems, handleAddItem, handleRemoveItem, resetBudgetItems } =
+    useBudgetItems(products, form);
 
   const {
     otherCosts,
@@ -81,6 +77,7 @@ export const NewBudgetModal = ({
     setCostType,
     handleAddCost,
     handleRemoveCost,
+    resetBudgetCosts,
   } = useBudgetCosts();
 
   const {
@@ -89,10 +86,46 @@ export const NewBudgetModal = ({
     profitability,
     profitabilityLoading,
     suggestedPrice,
-    handleTotalValueChange,
-    handleUseSuggestedPrice,
     getProfitabilityColor,
+    resetFinancials,
+    handleTotalValueInput,
   } = useBudgetFinancials(budgetItems, otherCosts, selectedServices, form);
+
+  const handleReset = useCallback(() => {
+    form.resetFields();
+
+    setSelectedServices([]);
+    setLoading(false);
+
+    resetBudgetItems();
+    resetBudgetCosts();
+    resetFinancials();
+
+    form.setFieldsValue({
+      status: "draft",
+      issue_date: dayjs(),
+      validity_date: dayjs().add(30, "day"),
+      quantity: 1,
+      discount: 0,
+    });
+
+    setCostName("");
+    setCostAmount(null);
+    setCostType("fixed");
+  }, [
+    form,
+    resetBudgetItems,
+    resetBudgetCosts,
+    resetFinancials,
+    setCostName,
+    setCostAmount,
+    setCostType,
+  ]);
+
+  const handleModalClose = useCallback(() => {
+    handleReset();
+    onClose();
+  }, [handleReset, onClose]);
 
   const handleServiceSelection = useCallback(
     (serviceIds: string[]) => {
@@ -121,6 +154,15 @@ export const NewBudgetModal = ({
     [selectedServices, form]
   );
 
+  const handleMoneyChange = useCallback(
+    (value: string | number | null) => {
+      if (value === null) return;
+      const formattedValue = Masks.money(value.toString());
+      form.setFieldsValue({ discount: formattedValue });
+    },
+    [form]
+  );
+
   const handleSubmit = useCallback(() => {
     form
       .validateFields()
@@ -133,7 +175,7 @@ export const NewBudgetModal = ({
           return Promise.reject("No items added");
         }
 
-        if (totalValue <= 0) {
+        if (totalValue < 0) {
           notification.error({
             message: "Valor total inválido",
             description: "Por favor, defina um valor total para o orçamento.",
@@ -148,10 +190,19 @@ export const NewBudgetModal = ({
 
         const items = budgetItems.map((item) => ({
           product_id: item.product_id,
-          unit_price: item.unit_price,
+          unit_price:
+            typeof item.unit_price === "string"
+              ? Masks.clearMoney(item.unit_price)
+              : item.unit_price,
           quantity: item.quantity,
-          total_price: item.total_price,
-          discount: item.discount,
+          total_price:
+            typeof item.total_price === "string"
+              ? Masks.clearMoney(item.total_price)
+              : item.total_price,
+          discount:
+            typeof item.discount === "string"
+              ? Masks.clearMoney(item.discount)
+              : item.discount,
         }));
 
         const budgetData = {
@@ -161,6 +212,8 @@ export const NewBudgetModal = ({
           total_value: totalValue,
           total_cost: totalCost,
           status: values.status || "draft",
+          title: values.title,
+          observations: values.observations ?? "",
           items,
           other_costs: otherCosts,
           services: selectedServices,
@@ -175,6 +228,7 @@ export const NewBudgetModal = ({
           message: "Orçamento criado com sucesso",
           description: `O orçamento foi cadastrado com sucesso!`,
         });
+        handleReset();
         onClose();
         budgetRefresh();
       })
@@ -204,85 +258,42 @@ export const NewBudgetModal = ({
     profitability,
     onClose,
     budgetRefresh,
+    handleReset,
   ]);
 
-  const columns = getBudgetItemColumns(handleRemoveItem);
+  const budgetItemColumns = getBudgetItemColumns(handleRemoveItem);
+  const serviceColumns = getServiceColumns(handleRemoveService);
+  const costColumns = getCostColumns(handleRemoveCost);
 
-  const serviceColumns = [
-    {
-      title: "Nome do Serviço",
-      dataIndex: "name",
-      key: "name",
+  const handleCostAmountChange = useCallback(
+    (value: number | null) => {
+      setCostAmount(value);
     },
-    {
-      title: "Descrição",
-      dataIndex: "description",
-      key: "description",
-      ellipsis: true,
-    },
-    {
-      title: "Custo",
-      dataIndex: "cost",
-      key: "cost",
-      render: (value: number) => `R$ ${value}`,
-    },
-    {
-      title: "Ações",
-      key: "action",
-      render: (_: unknown, record: IService) => (
-        <Button
-          type="text"
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => handleRemoveService(record.id)}
-        />
-      ),
-    },
-  ];
+    [setCostAmount]
+  );
 
-  const costColumns = [
-    {
-      title: "Nome",
-      dataIndex: "name",
-      key: "name",
+  const handleCostTypeChange = useCallback(
+    (value: "fixed" | "percentage") => {
+      setCostType(value);
+      // Não precisamos reformatar explicitamente aqui, pois o formatter do InputNumber
+      // será chamado automaticamente quando o costType mudar
     },
-    {
-      title: "Valor",
-      dataIndex: "amount",
-      key: "amount",
-      render: (value: number, record: IOtherCost) =>
-        record.cost_type === "percentage"
-          ? `${value}%`
-          : `R$ ${value.toFixed(2)}`,
-    },
-    {
-      title: "Tipo",
-      dataIndex: "cost_type",
-      key: "cost_type",
-      render: (value: string) => (value === "fixed" ? "Fixo" : "Percentual"),
-    },
-    {
-      title: "Ações",
-      key: "action",
-      render: (_: unknown, record: IOtherCost) => (
-        <Button
-          type="text"
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => handleRemoveCost(record.id)}
-        />
-      ),
-    },
-  ];
+    [setCostType]
+  );
 
   return (
     <Modal
       title={<Title level={4}>Novo Orçamento</Title>}
       open={isOpen}
-      onCancel={onClose}
+      onCancel={handleModalClose}
       width={900}
       footer={[
-        <Button key="back" onClick={onClose}>
+        <Button
+          key="back"
+          onClick={handleModalClose}
+          className="h-10"
+          variant="outlined"
+        >
           Cancelar
         </Button>,
         <Button
@@ -291,6 +302,7 @@ export const NewBudgetModal = ({
           loading={loading}
           onClick={handleSubmit}
           icon={<SaveOutlined />}
+          className="h-10"
         >
           Criar Orçamento
         </Button>,
@@ -356,6 +368,9 @@ export const NewBudgetModal = ({
 
         <Divider orientation="left">Informações Básicas</Divider>
 
+        <Form.Item name="title" label="Título do Orçamento">
+          <Input placeholder="Insira o título do orçamento" className="h-10" />
+        </Form.Item>
         <Row gutter={16}>
           <Col xs={24} md={12}>
             <Form.Item
@@ -377,6 +392,7 @@ export const NewBudgetModal = ({
                     .toLowerCase()
                     .includes(input.toLowerCase())
                 }
+                className="h-10"
               >
                 {customers.map((customer) => (
                   <Option key={customer.id} value={customer.id}>
@@ -394,7 +410,7 @@ export const NewBudgetModal = ({
                 { required: true, message: "Por favor, selecione o status" },
               ]}
             >
-              <Select placeholder="Selecione o status">
+              <Select placeholder="Selecione o status" className="h-10">
                 <Option value="draft">Rascunho</Option>
                 <Option value="finalized">Finalizado</Option>
                 <Option value="sent">Enviado</Option>
@@ -416,10 +432,10 @@ export const NewBudgetModal = ({
               ]}
             >
               <DatePicker
-                style={{ width: "100%" }}
                 format="DD/MM/YYYY"
                 placeholder="Selecione a data"
                 prefix={<CalendarOutlined />}
+                className="h-10 w-full"
               />
             </Form.Item>
           </Col>
@@ -435,10 +451,10 @@ export const NewBudgetModal = ({
               ]}
             >
               <DatePicker
-                style={{ width: "100%" }}
                 format="DD/MM/YYYY"
                 placeholder="Selecione a data"
                 prefix={<CalendarOutlined />}
+                className="h-10 w-full"
               />
             </Form.Item>
           </Col>
@@ -458,6 +474,7 @@ export const NewBudgetModal = ({
                     .toLowerCase()
                     .includes(input.toLowerCase())
                 }
+                className="h-10"
               >
                 {products.map((product) => (
                   <Option key={product.id} value={product.id}>
@@ -469,12 +486,19 @@ export const NewBudgetModal = ({
           </Col>
           <Col xs={12} md={5}>
             <Form.Item name="quantity" label="Quantidade">
-              <InputNumber min={1} style={{ width: "100%" }} />
+              <InputNumber
+                min={1}
+                className="h-10 w-full flex items-center justify-center"
+              />
             </Form.Item>
           </Col>
           <Col xs={12} md={5}>
             <Form.Item name="discount" label="Desconto (R$)">
-              <InputNumber min={0} step={0.01} style={{ width: "100%" }} />
+              <Input
+                className="h-10 w-full"
+                placeholder="R$ 0,00"
+                onChange={(value) => handleMoneyChange(value.target.value)}
+              />
             </Form.Item>
           </Col>
           <Col xs={24} md={4} className="flex items-end">
@@ -483,7 +507,7 @@ export const NewBudgetModal = ({
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={handleAddItem}
-                style={{ width: "100%" }}
+                className="h-10 w-full"
               >
                 Adicionar
               </Button>
@@ -493,7 +517,7 @@ export const NewBudgetModal = ({
 
         <Table
           dataSource={budgetItems}
-          columns={columns}
+          columns={budgetItemColumns}
           pagination={false}
           size="small"
           className="mb-4"
@@ -509,6 +533,7 @@ export const NewBudgetModal = ({
                 placeholder="Ex: Frete, Impostos, etc."
                 value={costName}
                 onChange={(e) => setCostName(e.target.value)}
+                className="h-10"
               />
             </Form.Item>
           </Col>
@@ -516,11 +541,25 @@ export const NewBudgetModal = ({
             <Form.Item label="Valor">
               <InputNumber
                 min={0}
-                step={0.01}
-                style={{ width: "100%" }}
                 placeholder="Valor"
                 value={costAmount}
-                onChange={(value) => setCostAmount(value)}
+                onChange={handleCostAmountChange}
+                formatter={(value) => {
+                  if (value === null || value === undefined) return "";
+                  if (costType === "fixed") {
+                    return `R$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                  }
+                  return `${value}`;
+                }}
+                parser={(value) => {
+                  if (!value) return 0;
+                  if (costType === "fixed") {
+                    return (
+                      Number.parseFloat(value.replace(/[^\d.-]/g, "")) || 0
+                    );
+                  }
+                  return Number.parseFloat(value) || 0;
+                }}
                 prefix={
                   costType === "percentage" ? (
                     <PercentageOutlined />
@@ -528,6 +567,7 @@ export const NewBudgetModal = ({
                     <DollarOutlined />
                   )
                 }
+                className="h-10 w-full"
               />
             </Form.Item>
           </Col>
@@ -535,7 +575,8 @@ export const NewBudgetModal = ({
             <Form.Item label="Tipo de Custo">
               <Select
                 value={costType}
-                onChange={(value: "fixed" | "percentage") => setCostType(value)}
+                onChange={handleCostTypeChange}
+                className="h-10"
               >
                 <Option value="fixed">Fixo (R$)</Option>
                 <Option value="percentage">Percentual (%)</Option>
@@ -548,7 +589,7 @@ export const NewBudgetModal = ({
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={handleAddCost}
-                style={{ width: "100%" }}
+                className="h-10 w-full"
               >
                 Adicionar
               </Button>
@@ -573,7 +614,6 @@ export const NewBudgetModal = ({
           <Select
             mode="multiple"
             placeholder="Selecione os serviços"
-            style={{ width: "100%" }}
             onChange={handleServiceSelection}
             optionFilterProp="children"
             filterOption={(input, option) =>
@@ -581,6 +621,7 @@ export const NewBudgetModal = ({
                 .toLowerCase()
                 .includes(input.toLowerCase())
             }
+            className="h-10 w-full"
           >
             {services.map((service) => (
               <Option key={service.id} value={service.id}>
@@ -628,14 +669,6 @@ export const NewBudgetModal = ({
                       Sugerimos um valor de R$ {suggestedPrice.toFixed(2)} para
                       obter uma margem de lucro de 20%.
                     </Text>
-                    <Button
-                      type="primary"
-                      size="small"
-                      icon={<CalculatorOutlined />}
-                      onClick={handleUseSuggestedPrice}
-                    >
-                      Usar Valor Sugerido
-                    </Button>
                   </Space>
                 }
                 type="info"
@@ -655,20 +688,26 @@ export const NewBudgetModal = ({
                   required: true,
                   message: "Por favor, defina o valor total a cobrar",
                 },
+                {
+                  validator: (_, value) => {
+                    const numericValue = Number(Masks.clearMoney(value));
+                    if (numericValue >= 0) return Promise.resolve();
+                    return Promise.reject("O valor não pode ser negativo");
+                  },
+                },
               ]}
               tooltip="Este é o valor que será cobrado do cliente. Defina um valor que garanta a lucratividade desejada."
             >
               <Input
-                prefix={<DollarOutlined />}
                 placeholder="R$ 0,00"
-                onChange={handleTotalValueChange}
-                style={{ fontWeight: "bold", fontSize: "16px" }}
+                onChange={handleTotalValueInput}
+                className="h-10 w-full"
               />
             </Form.Item>
           </Col>
         </Row>
 
-        <Form.Item name="notes" label="Observações">
+        <Form.Item name="observations" label="Observações">
           <Input.TextArea
             rows={4}
             placeholder="Observações sobre o orçamento"

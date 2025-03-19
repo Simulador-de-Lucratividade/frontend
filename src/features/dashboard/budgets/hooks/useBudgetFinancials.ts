@@ -56,11 +56,10 @@ export const useBudgetFinancials = (
     if (newTotalCost > 0) {
       const suggested = newTotalCost * 1.2; // 20% profit margin
       setSuggestedPrice(suggested);
-
       if (totalValue === 0) {
         setTotalValue(suggested);
         form.setFieldsValue({
-          total_value: Masks.money(suggested.toString()),
+          total_value: Masks.money((suggested * 100).toString()),
         });
       }
     } else {
@@ -129,29 +128,34 @@ export const useBudgetFinancials = (
 
   const handleTotalValueChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      if (!value) {
-        setTotalValue(0);
-        return;
-      }
+      const rawValue = e.target.value.replace(/[^\d,\.]/g, "");
+      const normalizedValue = rawValue.replace(/\./g, "").replace(",", ".");
+      const numericValue = parseFloat(normalizedValue);
 
-      const numericValue = Number(value.replace(/[^\d]/g, "")) / 100;
-      setTotalValue(numericValue);
+      setTotalValue(!isNaN(numericValue) ? numericValue : 0);
 
-      const formattedValue = Masks.money(numericValue.toString());
-      form.setFieldsValue({ total_value: formattedValue });
+      form.setFieldsValue({ total_value: rawValue });
     },
     [form]
   );
 
-  const handleUseSuggestedPrice = useCallback(() => {
-    if (suggestedPrice) {
-      setTotalValue(suggestedPrice);
-      form.setFieldsValue({
-        total_value: Masks.money(suggestedPrice.toString()),
-      });
-    }
-  }, [suggestedPrice, form]);
+  const handleTotalValueInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const inputValue = e.target.value.replace(/[R$\s]/g, "");
+
+      form.setFieldsValue({ total_value: Masks.money(inputValue) });
+
+      const normalizedValue = inputValue.replace(/\./g, "").replace(",", ".");
+      const numericValue = parseFloat(normalizedValue);
+
+      if (!isNaN(numericValue)) {
+        setTotalValue(numericValue);
+      } else if (inputValue === "" || inputValue === "0") {
+        setTotalValue(0);
+      }
+    },
+    [form]
+  );
 
   const getProfitabilityColor = useCallback((value: number | null) => {
     if (value === null) return "";
@@ -161,6 +165,13 @@ export const useBudgetFinancials = (
     return "#1890ff";
   }, []);
 
+  const resetFinancials = useCallback(() => {
+    setTotalCost(0);
+    setTotalValue(0);
+    setProfitability(null);
+    setSuggestedPrice(null);
+  }, []);
+
   return {
     totalCost,
     totalValue,
@@ -168,7 +179,8 @@ export const useBudgetFinancials = (
     profitabilityLoading,
     suggestedPrice,
     handleTotalValueChange,
-    handleUseSuggestedPrice,
     getProfitabilityColor,
+    resetFinancials,
+    handleTotalValueInput,
   };
 };

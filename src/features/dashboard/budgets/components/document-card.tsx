@@ -8,6 +8,8 @@ import dayjs from "dayjs";
 
 export const DocumentCard: React.FC<IBudget> = ({
   id,
+  title,
+  sequence_number,
   customer,
   created_at,
 }) => {
@@ -26,9 +28,10 @@ export const DocumentCard: React.FC<IBudget> = ({
 
       <div className="flex-1 min-w-0 order-3 sm:order-2 w-full sm:w-auto">
         <p className="font-medium text-gray-800 text-sm sm:text-base mb-1 sm:mb-2 truncate max-w-full">
-          {customer ? customer.name : "Cliente não encontrado"}
+          {title} - Orçamento Nº{sequence_number}
         </p>
-        <span className="text-gray-500 text-xs sm:text-sm block truncate">
+        <p className="text-gray-800 font-light">{customer && customer.name}</p>
+        <span className="text-gray-500 text-xs sm:text-sm block truncate mt-1">
           {formattedDate}
         </span>
       </div>

@@ -51,10 +51,15 @@ export const useBudgetItems = (products: IProduct[], form: FormInstance) => {
     setBudgetItems((prev) => prev.filter((item) => item.id !== key));
   }, []);
 
+  const resetBudgetItems = useCallback(() => {
+    setBudgetItems([]);
+  }, []);
+
   return {
     budgetItems,
     setBudgetItems,
     handleAddItem,
     handleRemoveItem,
+    resetBudgetItems,
   };
 };

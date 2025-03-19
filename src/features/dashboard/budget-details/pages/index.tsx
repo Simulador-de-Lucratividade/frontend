@@ -37,7 +37,6 @@ import {
 import { ApplicationLayout } from "@/shared/components/application-layout";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { itemColumns } from "./item-columns";
-import { mockBudgetData } from "./mock-data";
 import type { TabsProps } from "antd";
 import { useBudgetById } from "../../budgets/hooks/useBudgetById";
 import dayjs from "dayjs";
@@ -98,52 +97,54 @@ export default function BudgetDetailsScreen() {
         <Card className="mt-4">
           <div className="overflow-x-auto">
             <Table
-              dataSource={mockBudgetData.items}
+              dataSource={budget?.items.map((item) => item)}
               columns={itemColumns}
               pagination={false}
               rowKey="id"
               size={screens.sm ? "middle" : "small"}
-              footer={() => (
-                <Row gutter={[16, 16]} justify="space-between" align="middle">
-                  <Col xs={24} md={12}>
-                    <Button
-                      type="dashed"
-                      icon={<PlusOutlined />}
-                      size={screens.sm ? "middle" : "small"}
-                    >
-                      Adicionar Item
-                    </Button>
-                  </Col>
-                  <Col xs={24} md={12}>
-                    <div className="flex flex-col items-end gap-1">
-                      <Text>
-                        Subtotal: R${" "}
-                        {mockBudgetData.subtotal.toLocaleString("pt-BR", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </Text>
-                      <Text>
-                        Desconto: R${" "}
-                        {mockBudgetData.discount.toLocaleString("pt-BR", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </Text>
-                      <Text>
-                        Impostos: R${" "}
-                        {mockBudgetData.tax.toLocaleString("pt-BR", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </Text>
-                      <Text strong className="text-lg">
-                        Total: R${" "}
-                        {mockBudgetData.total.toLocaleString("pt-BR", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </Text>
-                    </div>
-                  </Col>
-                </Row>
-              )}
+              footer={() => {
+                const subtotal = budget?.total_value;
+                const discount = budget?.items.reduce(
+                  (acc, item) => acc + (item.discount || 0),
+                  0
+                );
+
+                return (
+                  <Row gutter={[16, 16]} justify="space-between" align="middle">
+                    <Col xs={24} md={12}>
+                      <Button
+                        type="dashed"
+                        icon={<PlusOutlined />}
+                        size={screens.sm ? "middle" : "small"}
+                      >
+                        Adicionar Item
+                      </Button>
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <div className="flex flex-col items-end gap-1">
+                        <Text>
+                          Subtotal: R${" "}
+                          {subtotal?.toLocaleString("pt-BR", {
+                            minimumFractionDigits: 2,
+                          })}
+                        </Text>
+                        <Text>
+                          Desconto: R${" "}
+                          {discount?.toLocaleString("pt-BR", {
+                            minimumFractionDigits: 2,
+                          })}
+                        </Text>
+                        <Text>
+                          Total: R${" "}
+                          {budget?.total_value.toLocaleString("pt-BR", {
+                            minimumFractionDigits: 2,
+                          })}
+                        </Text>
+                      </div>
+                    </Col>
+                  </Row>
+                );
+              }}
             />
           </div>
         </Card>
@@ -161,25 +162,25 @@ export default function BudgetDetailsScreen() {
             size={screens.sm ? "default" : "small"}
           >
             <Descriptions.Item label="Cliente">
-              {mockBudgetData.client.name}
+              {budget?.customer.name}
             </Descriptions.Item>
             <Descriptions.Item label="Contato">
-              {mockBudgetData.client.contact}
+              {budget?.customer.phone || "Não informado"}
             </Descriptions.Item>
             <Descriptions.Item label="E-mail">
-              {mockBudgetData.client.email}
+              {budget?.customer.email || "Não informado"}
             </Descriptions.Item>
             <Descriptions.Item label="Telefone">
-              {mockBudgetData.client.phone}
+              {budget?.customer.phone || "Não informado"}
             </Descriptions.Item>
             <Descriptions.Item label="Endereço" span={2}>
-              {mockBudgetData.client.address}
+              {"Não informado"}
             </Descriptions.Item>
             <Descriptions.Item label="Data de Criação">
-              {mockBudgetData.createdAt}
+              {dayjs(budget?.created_at).format("DD/MM/YYYY")}
             </Descriptions.Item>
             <Descriptions.Item label="Válido até">
-              {mockBudgetData.validUntil}
+              {dayjs(budget?.validity_date).format("DD/MM/YYYY")}
             </Descriptions.Item>
           </Descriptions>
 
@@ -188,7 +189,7 @@ export default function BudgetDetailsScreen() {
           <div>
             <Text strong>Observações</Text>
             <Paragraph className="mt-2">
-              {mockBudgetData.notes ||
+              {budget?.observations ||
                 "Nenhuma observação adicional para este orçamento."}
             </Paragraph>
           </div>
@@ -232,7 +233,7 @@ export default function BudgetDetailsScreen() {
                     Voltar para orçamentos
                   </Button>
                   <Title level={screens.sm ? 2 : 3} className="mb-0">
-                    Orçamento - {budget.customer.name} {formattedDate}
+                    {budget.title} Nº{budget.sequence_number}
                   </Title>
                 </Col>
                 <Col xs={24} md={8} className="text-left md:text-right">
@@ -280,7 +281,7 @@ export default function BudgetDetailsScreen() {
                           level={screens.sm ? 3 : 4}
                           style={{ marginBottom: 0 }}
                         >
-                          Orçamento #{budget.id}
+                          Orçamento Nº{budget.sequence_number}
                         </Title>
                         <Space size="small" wrap>
                           <Tag color={getStatusColor(budget.status)}>
@@ -297,7 +298,10 @@ export default function BudgetDetailsScreen() {
                         </Space>
                         <Space size="small">
                           <LockOutlined />
-                          <Text>Válido até: {budget.issue_date}</Text>
+                          <Text>
+                            Válido até:{" "}
+                            {dayjs(budget.validity_date).format("DD/MM/YYYY")}
+                          </Text>
                         </Space>
                       </Space>
                     </Space>
@@ -369,14 +373,14 @@ export default function BudgetDetailsScreen() {
                           <DollarOutlined className="mr-2 text-gray-500" />
                           <Text strong className="text-lg">
                             R${" "}
-                            {mockBudgetData.total.toLocaleString("pt-BR", {
+                            {budget.total_value.toLocaleString("pt-BR", {
                               minimumFractionDigits: 2,
                             })}
                           </Text>
                         </div>
                       </div>
 
-                      {mockBudgetData.status === "pending" && (
+                      {budget.status === "pending" && (
                         <>
                           <Divider className="my-2" />
                           <Button

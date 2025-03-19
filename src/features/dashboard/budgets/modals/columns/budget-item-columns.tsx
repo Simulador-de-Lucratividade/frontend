@@ -1,7 +1,7 @@
 import { Button } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import type { TableColumnType } from "antd";
-import { BudgetItemViewModel } from "../interfaces/IBudget";
+import { BudgetItemViewModel } from "../../interfaces/IBudget";
 
 export const getBudgetItemColumns = (
   handleRemoveItem: (key: string) => void

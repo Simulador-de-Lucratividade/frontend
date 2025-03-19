@@ -6,8 +6,8 @@ const { Text } = Typography;
 export const itemColumns = [
   {
     title: "Descrição",
-    dataIndex: "description",
-    key: "description",
+    dataIndex: "product_id",
+    key: "product_id",
     render: (text: string) => <Text strong>{text}</Text>,
   },
   {
@@ -18,28 +18,25 @@ export const itemColumns = [
     responsive: ["md" as Breakpoint],
   },
   {
-    title: "Un.",
-    dataIndex: "unit",
-    key: "unit",
-    align: "center" as const,
-    responsive: ["lg" as Breakpoint],
-  },
-  {
     title: "Valor Un.",
-    dataIndex: "unitPrice",
-    key: "unitPrice",
+    dataIndex: "unit_price",
+    key: "unit_price",
     align: "right" as const,
     render: (value: number) =>
-      `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+      value !== undefined
+        ? `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+        : "R$ 0,00",
     responsive: ["md" as Breakpoint],
   },
   {
     title: "Total",
-    dataIndex: "total",
-    key: "total",
+    dataIndex: "total_price",
+    key: "total_price",
     align: "right" as const,
     render: (value: number) =>
-      `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+      value !== undefined
+        ? `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+        : "R$ 0,00",
   },
   {
     title: "",

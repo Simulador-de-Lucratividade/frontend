@@ -31,6 +31,9 @@ export interface IBudget {
   validity_date: string;
   total_value: number;
   status: "draft" | "pending" | "approved";
+  title: string;
+  observations?: string;
+  sequence_number?: number;
   items: IBudgetItem[];
   created_at: string;
   updated_at: string;
@@ -42,6 +45,8 @@ export interface ICreateBudget {
   validity_date: string;
   total_value: number;
   status: "draft" | "pending" | "approved";
+  title: string;
+  observations?: string;
   items: Omit<IBudgetItem, "id" | "budget_id">[];
 }
 

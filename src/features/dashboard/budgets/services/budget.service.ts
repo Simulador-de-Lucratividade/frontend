@@ -13,6 +13,8 @@ const create = async ({
   total_value,
   status,
   items,
+  title,
+  observations,
 }: ICreateBudget): Promise<AxiosResponse<IBudgetResponse>> =>
   await api.post("/budget", {
     customer_id,
@@ -21,6 +23,8 @@ const create = async ({
     total_value,
     status,
     items,
+    title,
+    observations,
   });
 
 const getAll = async (): Promise<AxiosResponse<IGetAllBudgetsResponse>> =>

@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 import {
-  IProfitabilityCalculationParams,
+  IProfitabilityRequest,
   IProfitabilityResponse,
 } from "../interfaces/IProfitabilityCalculator";
 import api from "@/shared/services/api.service";
@@ -10,9 +10,7 @@ const calculateProfitability = async ({
   services,
   total_value,
   other_costs,
-}: IProfitabilityCalculationParams): Promise<
-  AxiosResponse<IProfitabilityResponse>
-> =>
+}: IProfitabilityRequest): Promise<AxiosResponse<IProfitabilityResponse>> =>
   await api.post("/budget/calculate-profitability", {
     items,
     services,
