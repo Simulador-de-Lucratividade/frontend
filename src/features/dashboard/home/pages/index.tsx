@@ -4,7 +4,6 @@ import { ApplicationLayout } from "@/shared/components/application-layout";
 import { ProtectedRoute } from "@/shared/components/protected-route";
 import { ActionCard } from "../components/action-card";
 import { Section } from "@/features/dashboard/budgets/components/section";
-import { DocumentCard } from "@/features/dashboard/budgets/components/document-card";
 import { DocumentList } from "../components/document-list";
 import { useBudgets } from "../../budgets/hooks/useBudgets";
 import { Spin } from "antd";
@@ -32,13 +31,6 @@ export default function HomeScreen() {
                 />
               ))}
             </div>
-            <Section title="Modificados recentemente">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {budgets.map((budget) => (
-                  <DocumentCard key={budget.id} {...budget} />
-                ))}
-              </div>
-            </Section>
             <Section title="Todos os orçamentos">
               <div className="flex flex-col gap-2">
                 <DocumentList documents={budgets} />

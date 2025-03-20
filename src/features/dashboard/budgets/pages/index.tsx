@@ -120,7 +120,11 @@ export default function BudgetsScreen() {
                 ) : (
                   <>
                     {budgets.map((doc, index) => (
-                      <DocumentCard key={index} {...doc} />
+                      <DocumentCard
+                        key={index}
+                        {...doc}
+                        budgetRefresh={budgetRefresh}
+                      />
                     ))}
                   </>
                 )}
