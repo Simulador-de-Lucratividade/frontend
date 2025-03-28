@@ -22,14 +22,6 @@ export const useBudgetFinancials = (
   const [profitabilityLoading, setProfitabilityLoading] = useState(false);
   const [suggestedPrice, setSuggestedPrice] = useState<number | null>(null);
 
-  useEffect(() => {
-    calculateTotalCost();
-  }, [budgetItems, otherCosts, selectedServices]);
-
-  useEffect(() => {
-    calculateProfitability();
-  }, [totalValue, totalCost]);
-
   const calculateTotalCost = useCallback(() => {
     const itemsCost = budgetItems.reduce(
       (sum, item) => sum + item.total_price,
@@ -54,18 +46,16 @@ export const useBudgetFinancials = (
     setTotalCost(newTotalCost);
 
     if (newTotalCost > 0) {
-      const suggested = newTotalCost * 1.2; // 20% profit margin
+      const suggested = newTotalCost * 1.2; // 20% de margem de lucro
       setSuggestedPrice(suggested);
-      if (totalValue === 0) {
-        setTotalValue(suggested);
-        form.setFieldsValue({
-          total_value: Masks.money((suggested * 100).toString()),
-        });
-      }
+      setTotalValue(suggested);
+      form.setFieldsValue({
+        total_value: Masks.money((suggested * 100).toString()),
+      });
     } else {
       setSuggestedPrice(null);
     }
-  }, [budgetItems, otherCosts, selectedServices, form, totalValue]);
+  }, [budgetItems, otherCosts, selectedServices, form]);
 
   const calculateProfitability = useCallback(() => {
     if (budgetItems.length === 0 || totalCost === 0 || totalValue === 0) {
@@ -103,7 +93,6 @@ export const useBudgetFinancials = (
       other_costs: formattedCosts,
       services: formattedServices,
     };
-
     profitabilityService
       .calculateProfitability(requestPayload)
       .then((response) => {
@@ -126,35 +115,22 @@ export const useBudgetFinancials = (
       });
   }, [budgetItems, otherCosts, selectedServices, totalValue, totalCost]);
 
-  const handleTotalValueChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const rawValue = e.target.value.replace(/[^\d,\.]/g, "");
-      const normalizedValue = rawValue.replace(/\./g, "").replace(",", ".");
-      const numericValue = parseFloat(normalizedValue);
-
-      setTotalValue(!isNaN(numericValue) ? numericValue : 0);
-
-      form.setFieldsValue({ total_value: rawValue });
-    },
-    [form]
-  );
-
   const handleTotalValueInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = e.target.value.replace(/[R$\s]/g, "");
-
       form.setFieldsValue({ total_value: Masks.money(inputValue) });
 
       const normalizedValue = inputValue.replace(/\./g, "").replace(",", ".");
-      const numericValue = parseFloat(normalizedValue);
+      const numericValue = Number.parseFloat(normalizedValue);
 
-      if (!isNaN(numericValue)) {
-        setTotalValue(numericValue);
-      } else if (inputValue === "" || inputValue === "0") {
+      if (inputValue === "" || inputValue === "0") {
         setTotalValue(0);
+      } else {
+        setTotalValue(numericValue);
+        setTimeout(() => calculateProfitability(), 0);
       }
     },
-    [form]
+    [form, calculateProfitability]
   );
 
   const getProfitabilityColor = useCallback((value: number | null) => {
@@ -172,13 +148,23 @@ export const useBudgetFinancials = (
     setSuggestedPrice(null);
   }, []);
 
+  useEffect(() => {
+    calculateTotalCost();
+  }, [budgetItems, otherCosts, selectedServices, calculateTotalCost]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      calculateProfitability();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [totalValue, calculateProfitability]);
+
   return {
     totalCost,
     totalValue,
     profitability,
     profitabilityLoading,
     suggestedPrice,
-    handleTotalValueChange,
     getProfitabilityColor,
     resetFinancials,
     handleTotalValueInput,

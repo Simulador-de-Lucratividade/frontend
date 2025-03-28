@@ -45,7 +45,6 @@ export const useBudgetById = (budget_id: string): BudgetResponse => {
   useEffect(() => {
     if (budget_id) {
       fetchData();
-      console.log(budget);
     }
   }, [budget_id]);
 

@@ -26,7 +26,6 @@ import {
   MailOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  PlusOutlined,
   FileTextOutlined,
   UserOutlined,
   CalendarOutlined,
@@ -40,6 +39,7 @@ import { itemColumns } from "./item-columns";
 import type { TabsProps } from "antd";
 import { useBudgetById } from "../../budgets/hooks/useBudgetById";
 import dayjs from "dayjs";
+import Masks from "@/shared/utils/masks";
 
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
@@ -103,7 +103,6 @@ export default function BudgetDetailsScreen() {
               rowKey="id"
               size={screens.sm ? "middle" : "small"}
               footer={() => {
-                const subtotal = budget?.total_value;
                 const discount = budget?.items.reduce(
                   (acc, item) => acc + (item.discount || 0),
                   0
@@ -111,34 +110,15 @@ export default function BudgetDetailsScreen() {
 
                 return (
                   <Row gutter={[16, 16]} justify="space-between" align="middle">
-                    <Col xs={24} md={12}>
-                      <Button
-                        type="dashed"
-                        icon={<PlusOutlined />}
-                        size={screens.sm ? "middle" : "small"}
-                      >
-                        Adicionar Item
-                      </Button>
-                    </Col>
+                    <Col xs={24} md={12}></Col>
                     <Col xs={24} md={12}>
                       <div className="flex flex-col items-end gap-1">
                         <Text>
-                          Subtotal: R${" "}
-                          {subtotal?.toLocaleString("pt-BR", {
-                            minimumFractionDigits: 2,
-                          })}
+                          Desconto: {Masks.money(discount?.toString() ?? "")}
                         </Text>
                         <Text>
-                          Desconto: R${" "}
-                          {discount?.toLocaleString("pt-BR", {
-                            minimumFractionDigits: 2,
-                          })}
-                        </Text>
-                        <Text>
-                          Total: R${" "}
-                          {budget?.total_value.toLocaleString("pt-BR", {
-                            minimumFractionDigits: 2,
-                          })}
+                          Total:{" "}
+                          {Masks.money(budget?.total_value.toString() ?? "")}
                         </Text>
                       </div>
                     </Col>
@@ -372,10 +352,7 @@ export default function BudgetDetailsScreen() {
                         <div className="flex items-center mt-1">
                           <DollarOutlined className="mr-2 text-gray-500" />
                           <Text strong className="text-lg">
-                            R${" "}
-                            {budget.total_value.toLocaleString("pt-BR", {
-                              minimumFractionDigits: 2,
-                            })}
+                            {Masks.money(budget.total_value.toString())}
                           </Text>
                         </div>
                       </div>

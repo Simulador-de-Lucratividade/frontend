@@ -15,7 +15,6 @@ import {
   InputNumber,
   Card,
   Statistic,
-  Tooltip,
   Space,
   Tag,
   Alert,
@@ -25,7 +24,6 @@ import {
   DollarOutlined,
   PlusOutlined,
   SaveOutlined,
-  InfoCircleOutlined,
   PercentageOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -275,8 +273,6 @@ export const NewBudgetModal = ({
   const handleCostTypeChange = useCallback(
     (value: "fixed" | "percentage") => {
       setCostType(value);
-      // Não precisamos reformatar explicitamente aqui, pois o formatter do InputNumber
-      // será chamado automaticamente quando o costType mudar
     },
     [setCostType]
   );
@@ -326,9 +322,6 @@ export const NewBudgetModal = ({
                 title={
                   <Space>
                     <Text strong>Lucratividade Estimada</Text>
-                    <Tooltip title="Calculada como: ((Valor Total - Custo Total) / Custo Total) * 100">
-                      <InfoCircleOutlined />
-                    </Tooltip>
                   </Space>
                 }
                 value={profitability !== null ? profitability : "—"}
@@ -368,7 +361,16 @@ export const NewBudgetModal = ({
 
         <Divider orientation="left">Informações Básicas</Divider>
 
-        <Form.Item name="title" label="Título do Orçamento">
+        <Form.Item
+          name="title"
+          label="Título do Orçamento"
+          rules={[
+            {
+              required: true,
+              message: "Por favor, insira o título do orçamento",
+            },
+          ]}
+        >
           <Input placeholder="Insira o título do orçamento" className="h-10" />
         </Form.Item>
         <Row gutter={16}>
@@ -651,8 +653,7 @@ export const NewBudgetModal = ({
                 title="Custo Total"
                 value={totalCost}
                 precision={2}
-                prefix={<DollarOutlined />}
-                suffix="R$"
+                prefix={"R$"}
               />
               <Text type="secondary">
                 Soma de todos os produtos, custos adicionais e serviços

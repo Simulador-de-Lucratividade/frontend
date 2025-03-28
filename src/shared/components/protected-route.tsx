@@ -10,13 +10,13 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const router = useRouter();
-  const { isLoggedIn } = useAuthStore();
+  const { isLoggedIn, hydrated } = useAuthStore();
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (hydrated && !isLoggedIn) {
       router.push("/autenticacao");
     }
-  }, [isLoggedIn, router]);
+  }, [isLoggedIn, hydrated, router]);
 
-  return isLoggedIn ? <>{children}</> : null;
+  return hydrated ? <>{children}</> : null;
 };

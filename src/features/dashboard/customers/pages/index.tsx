@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import {
   Input,
   Select,
@@ -26,12 +26,14 @@ import { CustomerCard } from "../components/customer-card";
 import { NewCustomerModal } from "../modals/new-customer";
 import { useCustomers } from "../hooks/useCustomers";
 import { LoadingOutlined } from "@ant-design/icons";
+import { useSearchParams } from "next/navigation";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
 export default function CustomerScreen() {
   const screens = useBreakpoint();
+  const searchParams = useSearchParams();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
@@ -75,107 +77,125 @@ export default function CustomerScreen() {
     }
   });
 
+  useEffect(() => {
+    const action = searchParams.get("action");
+    if (action === "2") {
+      setIsModalAddVisible(true);
+    }
+  }, [searchParams]);
+
   return (
-    <ProtectedRoute>
-      <ApplicationLayout>
-        <div className="p-4 sm:p-6">
-          <Space direction="vertical" size="large" className="w-full">
-            <Row gutter={[16, 16]} justify="space-between" align="middle" wrap>
-              <Col xs={24} sm={24} md={16}>
-                <Title level={screens.sm ? 2 : 3} className="mb-0">
-                  Clientes
-                </Title>
-                <Text type="secondary" className="text-gray-800">
-                  Gerencie todos os seus clientes e prospectos em um só lugar
-                </Text>
-              </Col>
-              <Col xs={24} sm={24} md={8} className="text-left md:text-right">
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  size={screens.sm ? "large" : "middle"}
-                  onClick={() => setIsModalAddVisible(true)}
-                  block={!screens.md}
-                  className="h-10"
-                >
-                  Novo cliente
-                </Button>
-              </Col>
-            </Row>
+    <Suspense fallback={<Spin tip="Carregando..." />}>
+      <ProtectedRoute>
+        <ApplicationLayout>
+          <div className="p-4 sm:p-6">
+            <Space direction="vertical" size="large" className="w-full">
+              <Row
+                gutter={[16, 16]}
+                justify="space-between"
+                align="middle"
+                wrap
+              >
+                <Col xs={24} sm={24} md={16}>
+                  <Title level={screens.sm ? 2 : 3} className="mb-0">
+                    Clientes
+                  </Title>
+                  <Text type="secondary" className="text-gray-800">
+                    Gerencie todos os seus clientes e prospectos em um só lugar
+                  </Text>
+                </Col>
+                <Col xs={24} sm={24} md={8} className="text-left md:text-right">
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    size={screens.sm ? "large" : "middle"}
+                    onClick={() => setIsModalAddVisible(true)}
+                    block={!screens.md}
+                    className="h-10"
+                  >
+                    Novo cliente
+                  </Button>
+                </Col>
+              </Row>
 
-            <Row gutter={[16, 16]}>
-              <Col xs={24} sm={24} md={8}>
-                <Input
-                  placeholder="Buscar cliente"
-                  prefix={<SearchOutlined />}
-                  size={screens.sm ? "large" : "middle"}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="h-10"
-                />
-              </Col>
-              <Col xs={24} sm={12} md={8}>
-                <Select
-                  placeholder="Status"
-                  style={{ width: "100%" }}
-                  options={statusOptions}
-                  value={selectedStatus}
-                  onChange={setSelectedStatus}
-                  suffixIcon={<FilterOutlined />}
-                  size={screens.sm ? "large" : "middle"}
-                  className="h-10"
-                />
-              </Col>
-              <Col xs={24} sm={12} md={8}>
-                <Select
-                  placeholder="Ordenar por"
-                  style={{ width: "100%" }}
-                  options={sortOptions}
-                  value={selectedSort}
-                  onChange={setSelectedSort}
-                  suffixIcon={<SortAscendingOutlined />}
-                  size={screens.sm ? "large" : "middle"}
-                  className="h-10"
-                />
-              </Col>
-            </Row>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={24} md={8}>
+                  <Input
+                    placeholder="Buscar cliente"
+                    prefix={<SearchOutlined />}
+                    size={screens.sm ? "large" : "middle"}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="h-10"
+                  />
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Select
+                    placeholder="Status"
+                    style={{ width: "100%" }}
+                    options={statusOptions}
+                    value={selectedStatus}
+                    onChange={setSelectedStatus}
+                    suffixIcon={<FilterOutlined />}
+                    size={screens.sm ? "large" : "middle"}
+                    className="h-10"
+                  />
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Select
+                    placeholder="Ordenar por"
+                    style={{ width: "100%" }}
+                    options={sortOptions}
+                    value={selectedSort}
+                    onChange={setSelectedSort}
+                    suffixIcon={<SortAscendingOutlined />}
+                    size={screens.sm ? "large" : "middle"}
+                    className="h-10"
+                  />
+                </Col>
+              </Row>
 
-            <Section title="">
-              <Space direction="vertical" size="middle" className="w-full">
-                {customerLoading ? (
-                  <div className="flex justify-center items-center">
-                    <Spin indicator={<LoadingOutlined />} />
-                  </div>
-                ) : (
-                  <>
-                    {sortedCustomers.length > 0 ? (
-                      sortedCustomers.map((customer) => (
-                        <CustomerCard key={customer.id} {...customer} />
-                      ))
-                    ) : (
-                      <div className="text-center py-8">
-                        <Space direction="vertical" align="center">
-                          <UserOutlined
-                            style={{ fontSize: 48, opacity: 0.5 }}
+              <Section title="">
+                <Space direction="vertical" size="middle" className="w-full">
+                  {customerLoading ? (
+                    <div className="flex justify-center items-center">
+                      <Spin indicator={<LoadingOutlined />} />
+                    </div>
+                  ) : (
+                    <>
+                      {sortedCustomers.length > 0 ? (
+                        sortedCustomers.map((customer) => (
+                          <CustomerCard
+                            key={customer.id}
+                            customer={customer}
+                            customerRefresh={customerRefresh}
                           />
-                          <Text type="secondary">
-                            Nenhum cliente encontrado
-                          </Text>
-                        </Space>
-                      </div>
-                    )}
-                  </>
-                )}
-              </Space>
-            </Section>
-          </Space>
-        </div>
-        <NewCustomerModal
-          isOpen={isModalAddVisible}
-          onClose={() => setIsModalAddVisible(false)}
-          customerRefresh={customerRefresh}
-        />
-      </ApplicationLayout>
-    </ProtectedRoute>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <Space direction="vertical" align="center">
+                            <UserOutlined
+                              style={{ fontSize: 48, opacity: 0.5 }}
+                            />
+                            <Text type="secondary">
+                              Nenhum cliente encontrado
+                            </Text>
+                          </Space>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </Space>
+              </Section>
+            </Space>
+          </div>
+          <NewCustomerModal
+            isOpen={isModalAddVisible}
+            onClose={() => setIsModalAddVisible(false)}
+            customerRefresh={customerRefresh}
+          />
+        </ApplicationLayout>
+      </ProtectedRoute>
+    </Suspense>
   );
 }

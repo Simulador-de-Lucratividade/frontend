@@ -4,6 +4,7 @@ import { BudgetItemViewModel } from "../interfaces/IBudget";
 import { IProduct } from "../../products/interface/IProduct";
 
 import { FormInstance } from "antd/lib/form";
+import Masks from "@/shared/utils/masks";
 
 export const useBudgetItems = (products: IProduct[], form: FormInstance) => {
   const [budgetItems, setBudgetItems] = useState<BudgetItemViewModel[]>([]);
@@ -12,6 +13,7 @@ export const useBudgetItems = (products: IProduct[], form: FormInstance) => {
     const product_id = form.getFieldValue("product_id");
     const quantity = form.getFieldValue("quantity") || 1;
     const discount = form.getFieldValue("discount") || 0;
+    const formattedDiscount = discount !== 0 ? Masks.clearMoney(discount) : 0;
 
     if (!product_id) {
       notification.error({
@@ -25,8 +27,8 @@ export const useBudgetItems = (products: IProduct[], form: FormInstance) => {
     const selectedProduct = products.find((p) => p.id === product_id);
     if (!selectedProduct) return;
 
-    const unit_price = selectedProduct.acquisition_cost;
-    const total_price = unit_price * quantity - discount;
+    const unit_price = Number(selectedProduct.acquisition_cost);
+    const total_price = unit_price * quantity - formattedDiscount;
 
     const newItem: BudgetItemViewModel = {
       id: Date.now().toString(),
@@ -35,7 +37,7 @@ export const useBudgetItems = (products: IProduct[], form: FormInstance) => {
       unit_price,
       quantity,
       total_price,
-      discount: discount || undefined,
+      discount: formattedDiscount || undefined,
     };
 
     setBudgetItems((prev) => [...prev, newItem]);

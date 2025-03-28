@@ -1,4 +1,5 @@
 import { ICustomer } from "../../customers/interface/ICustomer";
+import { IProduct } from "../../products/interface/IProduct";
 
 export interface DocumentCardProps {
   title: string;
@@ -12,6 +13,7 @@ export interface IBudgetItem {
   id: string;
   budget_id?: string;
   product_id: string;
+  product?: IProduct;
   unit_price: number;
   quantity: number;
   total_price: number;

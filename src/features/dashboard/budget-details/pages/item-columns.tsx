@@ -1,14 +1,18 @@
 import { Breakpoint, Button, Space, Typography } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { IProduct } from "../../products/interface/IProduct";
+import Masks from "@/shared/utils/masks";
 
 const { Text } = Typography;
 
 export const itemColumns = [
   {
     title: "Descrição",
-    dataIndex: "product_id",
-    key: "product_id",
-    render: (text: string) => <Text strong>{text}</Text>,
+    dataIndex: "product",
+    key: "name",
+    render: (product: IProduct) => (
+      <Text strong>{product?.name || "Produto não encontrado"}</Text>
+    ),
   },
   {
     title: "Qtd.",
@@ -23,9 +27,7 @@ export const itemColumns = [
     key: "unit_price",
     align: "right" as const,
     render: (value: number) =>
-      value !== undefined
-        ? `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-        : "R$ 0,00",
+      value !== undefined ? Masks.money(value.toString()) : "R$ 0,00",
     responsive: ["md" as Breakpoint],
   },
   {
@@ -34,9 +36,7 @@ export const itemColumns = [
     key: "total_price",
     align: "right" as const,
     render: (value: number) =>
-      value !== undefined
-        ? `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-        : "R$ 0,00",
+      value !== undefined ? Masks.money(value.toString()) : "R$ 0,00",
   },
   {
     title: "",

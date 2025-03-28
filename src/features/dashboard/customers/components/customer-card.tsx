@@ -21,13 +21,35 @@ import type { MenuProps } from "antd";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useRouter } from "next/navigation";
 import { ICustomer } from "../interface/ICustomer";
+import { useState } from "react";
+import { ConfirmDeleteModal } from "@/shared/components/delete-modal";
+import { customerService } from "../services/customer.service";
 
 const { Text, Title } = Typography;
 const { useBreakpoint } = Grid;
 
-export const CustomerCard = (customer: ICustomer) => {
+interface ICustomerCard {
+  customer: ICustomer;
+  customerRefresh: () => void;
+}
+
+export const CustomerCard = ({ customer, customerRefresh }: ICustomerCard) => {
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const screens = useBreakpoint();
   const router = useRouter();
+
+  const handleMenuClick = (e: {
+    key: string;
+    domEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>;
+  }) => {
+    e.domEvent.stopPropagation();
+
+    if (e.key === "3") {
+      setIsDeleteModalOpen(true);
+    } else if (e.key === "1") {
+      router.push(`/orcamentos/${customer.id}/editar`);
+    }
+  };
 
   const dropdownItems: MenuProps["items"] = [
     {
@@ -111,7 +133,7 @@ export const CustomerCard = (customer: ICustomer) => {
           <Col xs={24} sm={8} md={6} lg={4} className="text-right">
             <Space size="small" className={screens.sm ? "" : "w-full"} wrap>
               <Dropdown
-                menu={{ items: dropdownItems }}
+                menu={{ items: dropdownItems, onClick: handleMenuClick }}
                 trigger={["click"]}
                 placement="bottomRight"
               >
@@ -123,6 +145,15 @@ export const CustomerCard = (customer: ICustomer) => {
           </Col>
         </Row>
       </Card>
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onSuccess={customerRefresh}
+        itemId={customer.id}
+        itemName={customer.name}
+        itemType="Cliente"
+        deleteFunction={customerService.remove}
+      />
     </div>
   );
 };

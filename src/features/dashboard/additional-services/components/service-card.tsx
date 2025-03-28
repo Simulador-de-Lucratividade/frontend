@@ -12,19 +12,24 @@ import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { IService } from "../interface/IServices";
+import { ConfirmDeleteModal } from "@/shared/components/delete-modal";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Masks from "@/shared/utils/masks";
+import { additionalServicesService } from "../services/services.service";
 
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
 
-export const ServiceCard = (service: IService) => {
-  const screens = useBreakpoint();
+interface IServiceCardProps {
+  service: IService;
+  serviceRefresh: () => void;
+}
 
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  };
+export const ServiceCard = ({ service, serviceRefresh }: IServiceCardProps) => {
+  const screens = useBreakpoint();
+  const router = useRouter();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 
   const dropdownItems: MenuProps["items"] = [
     {
@@ -47,6 +52,19 @@ export const ServiceCard = (service: IService) => {
       danger: true,
     },
   ];
+
+  const handleMenuClick = (e: {
+    key: string;
+    domEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>;
+  }) => {
+    e.domEvent.stopPropagation();
+
+    if (e.key === "3") {
+      setIsDeleteModalOpen(true);
+    } else if (e.key === "1") {
+      router.push(`/orcamentos/${service.id}/editar`);
+    }
+  };
 
   return (
     <Card className="w-full transition-all duration-200 py-1 px-2 md:py-3 md:px-4">
@@ -97,10 +115,10 @@ export const ServiceCard = (service: IService) => {
             }`}
           >
             <Text strong className={screens.sm ? "text-base" : "text-sm"}>
-              {formatCurrency(service.cost)}
+              {Masks.money(service.cost.toString())}
             </Text>
             <Dropdown
-              menu={{ items: dropdownItems }}
+              menu={{ items: dropdownItems, onClick: handleMenuClick }}
               placement={screens.xs ? "bottomCenter" : "bottomRight"}
               trigger={["click"]}
             >
@@ -123,6 +141,16 @@ export const ServiceCard = (service: IService) => {
           </Space>
         </Col>
       </Row>
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onSuccess={serviceRefresh}
+        itemId={service.id}
+        itemName={service.description}
+        itemType="Serviço"
+        identifierValue={service.name}
+        deleteFunction={additionalServicesService.remove}
+      />
     </Card>
   );
 };

@@ -5,13 +5,13 @@ import { Button, Drawer, Menu } from "antd";
 import Sider from "antd/es/layout/Sider";
 import { useEffect, useState } from "react";
 import {
-  VideoCameraOutlined,
   HomeOutlined,
   UserOutlined,
   ProductOutlined,
-  CustomerServiceOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
+  AppstoreOutlined,
+  ProjectOutlined,
 } from "@ant-design/icons";
 import { usePathname } from "next/navigation";
 
@@ -32,7 +32,7 @@ const menuItems = [
   },
   {
     key: "2",
-    icon: <VideoCameraOutlined />,
+    icon: <ProjectOutlined />,
     label: <Link href="/orcamentos">Orçamentos</Link>,
   },
   {
@@ -47,7 +47,7 @@ const menuItems = [
   },
   {
     key: "5",
-    icon: <CustomerServiceOutlined />,
+    icon: <AppstoreOutlined />,
     label: <Link href="/servicos">Serviços</Link>,
   },
 ];

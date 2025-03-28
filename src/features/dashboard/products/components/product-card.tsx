@@ -18,10 +18,20 @@ import {
   FileTextOutlined,
 } from "@ant-design/icons";
 import { IProduct } from "../interface/IProduct";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ConfirmDeleteModal } from "@/shared/components/delete-modal";
+import { productService } from "../services/product.service";
+import Masks from "@/shared/utils/masks";
 
 const { Text } = Typography;
 
 const { useBreakpoint } = Grid;
+
+interface IProductCard {
+  product: IProduct;
+  productRefresh: () => void;
+}
 
 const dropdownItems: MenuProps["items"] = [
   {
@@ -42,8 +52,23 @@ const dropdownItems: MenuProps["items"] = [
   },
 ];
 
-export const ProductCard = (product: IProduct) => {
+export const ProductCard = ({ product, productRefresh }: IProductCard) => {
   const screens = useBreakpoint();
+  const router = useRouter();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+
+  const handleMenuClick = (e: {
+    key: string;
+    domEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>;
+  }) => {
+    e.domEvent.stopPropagation();
+
+    if (e.key === "3") {
+      setIsDeleteModalOpen(true);
+    } else if (e.key === "1") {
+      router.push(`/orcamentos/${product.id}/editar`);
+    }
+  };
 
   return (
     <Card className="w-full transition-all duration-200 px-4 py-3">
@@ -108,10 +133,10 @@ export const ProductCard = (product: IProduct) => {
             }`}
           >
             <Text strong className={screens.sm ? "text-base" : "text-sm"}>
-              {product.acquisition_cost}
+              {Masks.money(product.acquisition_cost.toString())}
             </Text>
             <Dropdown
-              menu={{ items: dropdownItems }}
+              menu={{ items: dropdownItems, onClick: handleMenuClick }}
               placement={screens.xs ? "bottomCenter" : "bottomRight"}
               trigger={["click"]}
             >
@@ -134,6 +159,16 @@ export const ProductCard = (product: IProduct) => {
           </Space>
         </Col>
       </Row>
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onSuccess={productRefresh}
+        itemId={product.id}
+        itemName={product.name}
+        itemType="Produto"
+        identifierValue={product.name}
+        deleteFunction={productService.remove}
+      />
     </Card>
   );
 };

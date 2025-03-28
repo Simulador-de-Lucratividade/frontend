@@ -13,6 +13,7 @@ export interface User {
 interface AuthState {
   user?: User;
   isLoggedIn: boolean;
+  hydrated: boolean;
   setUser: (user: User) => void;
   logout: () => void;
 }
@@ -22,11 +23,17 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: undefined,
       isLoggedIn: false,
-      setUser: (user: User) => set({ user, isLoggedIn: true }),
-      logout: () => set({ user: undefined, isLoggedIn: false }),
+      hydrated: false,
+      setUser: (user: User) => set({ user, isLoggedIn: true, hydrated: true }),
+      logout: () => set({ user: undefined, isLoggedIn: false, hydrated: true }),
     }),
     {
       name: "auth-store",
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.hydrated = true;
+        }
+      },
     }
   )
 );

@@ -12,6 +12,7 @@ import {
   FiSettings,
 } from "react-icons/fi";
 import { useMediaQuery } from "../hooks/use-media-query";
+import { useAuthStore } from "../context/auth";
 
 interface ApplicationLayoutProps {
   children: ReactNode;
@@ -23,6 +24,7 @@ export const ApplicationLayout: React.FC<ApplicationLayoutProps> = ({
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const { logout } = useAuthStore();
 
   return (
     <Layout className="h-screen overflow-hidden">
@@ -95,7 +97,10 @@ export const ApplicationLayout: React.FC<ApplicationLayoutProps> = ({
                   },
                   {
                     label: (
-                      <div className="flex items-center gap-3 px-4 py-2 border-t border-borderSecondary hover:bg-red-50 rounded-lg transition-colors">
+                      <div
+                        onClick={logout}
+                        className="flex items-center gap-3 px-4 py-2 border-t border-borderSecondary hover:bg-red-50 rounded-lg transition-colors"
+                      >
                         <FiLogOut size={16} className="text-red-500" />
                         <p className="text-red-500">Sair</p>
                       </div>

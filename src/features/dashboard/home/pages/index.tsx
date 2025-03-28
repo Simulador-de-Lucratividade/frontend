@@ -1,4 +1,5 @@
 "use client";
+
 import { cards } from "../data/cards";
 import { ApplicationLayout } from "@/shared/components/application-layout";
 import { ProtectedRoute } from "@/shared/components/protected-route";
@@ -11,6 +12,7 @@ import { LoadingOutlined } from "@ant-design/icons";
 
 export default function HomeScreen() {
   const { budgets, budgetLoading } = useBudgets();
+
   return (
     <ProtectedRoute>
       <ApplicationLayout>
@@ -26,7 +28,7 @@ export default function HomeScreen() {
                   icon={card.icon}
                   key={card.id}
                   id={card.id}
-                  redirect=""
+                  redirect={card.redirect}
                   title={card.title}
                 />
               ))}

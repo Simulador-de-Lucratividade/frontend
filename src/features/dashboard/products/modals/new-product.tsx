@@ -8,13 +8,13 @@ import {
   Col,
   Divider,
   Typography,
-  InputNumber,
   notification,
 } from "antd";
 import { DollarOutlined, BarcodeOutlined } from "@ant-design/icons";
 import { productService } from "../services/product.service";
 import { AxiosError, AxiosResponse } from "axios";
 import { ICreateProductResponse } from "../interface/IProduct";
+import Masks from "@/shared/utils/masks";
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -41,11 +41,19 @@ export const NewProductModal = ({
 
     setLoading(true);
 
+    const acquisitionCost = values.acquisition_cost
+      ? Masks.clearMoney(values.acquisition_cost)
+      : 0;
+
+    const salePrice = values.sale_price
+      ? Masks.clearMoney(values.sale_price)
+      : 0;
+
     productService
       .create({
         name: values.name,
-        acquisition_cost: values.acquisition_cost,
-        sale_price: values.sale_price,
+        acquisition_cost: acquisitionCost,
+        sale_price: salePrice,
         description: values.description,
         reference_code: values.sku || null,
       })
@@ -75,6 +83,22 @@ export const NewProductModal = ({
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  const handleMoneyInput = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    fieldName: string
+  ) => {
+    const { value } = e.target;
+
+    const numericValue = value.replace(/\D/g, "");
+
+    if (numericValue === "") {
+      form.setFieldValue(fieldName, "");
+      return;
+    }
+
+    form.setFieldValue(fieldName, Masks.money(numericValue));
   };
 
   return (
@@ -143,13 +167,10 @@ export const NewProductModal = ({
                 { required: true, message: "Por favor, informe o preço" },
               ]}
             >
-              <InputNumber
-                style={{ width: "100%" }}
-                min={0}
-                step={0.01}
-                precision={2}
+              <Input
                 prefix={<DollarOutlined />}
-                placeholder="0,00"
+                placeholder="R$ 0,00"
+                onChange={(e) => handleMoneyInput(e, "acquisition_cost")}
               />
             </Form.Item>
           </Col>
@@ -161,13 +182,10 @@ export const NewProductModal = ({
                 { required: true, message: "Por favor, informe o preço" },
               ]}
             >
-              <InputNumber
-                style={{ width: "100%" }}
-                min={0}
-                step={0.01}
-                precision={2}
+              <Input
                 prefix={<DollarOutlined />}
-                placeholder="0,00"
+                placeholder="R$ 0,00"
+                onChange={(e) => handleMoneyInput(e, "sale_price")}
               />
             </Form.Item>
           </Col>

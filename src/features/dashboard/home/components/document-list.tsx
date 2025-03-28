@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { Input, Spin } from "antd";
+import { Empty, Input, Spin } from "antd";
 import { motion } from "framer-motion";
 import { FiSearch } from "react-icons/fi";
 import { DocumentCard } from "@/features/dashboard/budgets/components/document-card";
@@ -42,17 +42,23 @@ export const DocumentList: React.FC<DocumentListProps> = ({
             transition={{ duration: 0.4 }}
             className="grid w-full gap-3 sm:gap-4"
           >
-            {documents.map((doc, index) => (
-              <motion.div
-                key={doc.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="w-full"
-              >
-                <DocumentCard {...doc} />
-              </motion.div>
-            ))}
+            {documents.length === 0 ? (
+              <Empty description={<p>Nenhum orçamento...</p>} />
+            ) : (
+              <>
+                {documents.map((doc, index) => (
+                  <motion.div
+                    key={doc.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="w-full"
+                  >
+                    <DocumentCard {...doc} />
+                  </motion.div>
+                ))}
+              </>
+            )}
           </motion.div>
         )}
       </div>

@@ -2,6 +2,7 @@ import { Button } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import type { TableColumnType } from "antd";
 import { BudgetItemViewModel } from "../../interfaces/IBudget";
+import Masks from "@/shared/utils/masks";
 
 export const getBudgetItemColumns = (
   handleRemoveItem: (key: string) => void
@@ -17,7 +18,10 @@ export const getBudgetItemColumns = (
     key: "unit_price",
     render: (value: number) => {
       const numValue = typeof value === "number" ? value : Number(value);
-      return isNaN(numValue) ? "R$ 0,00" : `R$ ${numValue.toFixed(2)}`;
+      const formattedValue = numValue * 100;
+      return isNaN(formattedValue)
+        ? "R$ 0,00"
+        : Masks.money(formattedValue.toString());
     },
   },
   {
@@ -32,7 +36,10 @@ export const getBudgetItemColumns = (
     render: (value?: number) => {
       if (!value) return "R$ 0,00";
       const numValue = typeof value === "number" ? value : Number(value);
-      return isNaN(numValue) ? "R$ 0,00" : `R$ ${numValue.toFixed(2)}`;
+      const formattedValue = numValue * 100;
+      return isNaN(formattedValue)
+        ? "R$ 0,00"
+        : Masks.money(formattedValue.toString());
     },
   },
   {
@@ -41,7 +48,10 @@ export const getBudgetItemColumns = (
     key: "total_price",
     render: (value: number) => {
       const numValue = typeof value === "number" ? value : Number(value);
-      return isNaN(numValue) ? "R$ 0,00" : `R$ ${numValue.toFixed(2)}`;
+      const formattedValue = numValue * 100;
+      return isNaN(formattedValue)
+        ? "R$ 0,00"
+        : Masks.money(formattedValue.toString());
     },
   },
   {

@@ -6,7 +6,8 @@ import type { IBudget } from "../interfaces/IBudget";
 import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 import { useState } from "react";
-import { DeleteBudgetModal } from "../modals/delete-budget";
+import { ConfirmDeleteModal } from "@/shared/components/delete-modal";
+import { budgetService } from "../services/budget.service";
 
 interface DocumentCardProps extends IBudget {
   budgetRefresh?: () => void;
@@ -21,8 +22,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   budgetRefresh = () => {},
 }) => {
   const router = useRouter();
-  const [isDeleteModalVisible, setIsDeleteModalVisible] =
-    useState<boolean>(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 
   const formattedDate = dayjs(created_at).format("DD/MM/YYYY");
 
@@ -37,7 +37,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
     e.domEvent.stopPropagation();
 
     if (e.key === "3") {
-      setIsDeleteModalVisible(true);
+      setIsDeleteModalOpen(true);
     } else if (e.key === "1") {
       router.push(`/orcamentos/${id}/editar`);
     }
@@ -115,13 +115,16 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         </div>
       </div>
 
-      <DeleteBudgetModal
-        isOpen={isDeleteModalVisible}
-        onClose={() => setIsDeleteModalVisible(false)}
-        budgetId={id}
-        budgetTitle={title}
-        sequenceNumber={sequence_number ?? 0}
-        budgetRefresh={budgetRefresh}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onSuccess={budgetRefresh}
+        itemId={id}
+        itemName={title}
+        itemType="Orçamento"
+        identifierLabel="Nº"
+        identifierValue={sequence_number}
+        deleteFunction={budgetService.remove}
       />
     </>
   );

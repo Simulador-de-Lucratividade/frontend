@@ -90,7 +90,16 @@ export const useBudgetCosts = () => {
     setCostAmount(null);
     setDisplayValue("");
     setCostType("fixed");
-  }, [costName, costAmount, costType]);
+  }, [
+    costName,
+    costAmount,
+    costType,
+    setOtherCosts,
+    setCostName,
+    setCostAmount,
+    setDisplayValue,
+    setCostType,
+  ]);
 
   const handleRemoveCost = useCallback((id: string) => {
     setOtherCosts((prev) => prev.filter((cost) => cost.id !== id));

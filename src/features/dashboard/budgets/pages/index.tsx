@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Input,
   Select,
@@ -11,6 +12,7 @@ import {
   Col,
   Grid,
   Spin,
+  Empty,
 } from "antd";
 import {
   SearchOutlined,
@@ -31,10 +33,12 @@ const { useBreakpoint } = Grid;
 
 export default function BudgetsScreen() {
   const screens = useBreakpoint();
+  const searchParams = useSearchParams();
 
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>("recent");
   const [isModalAddVisible, setIsModalAddVisible] = useState<boolean>(false);
+  const [search, setSearch] = useState<string>("");
 
   const statusOptions = [
     { value: "all", label: "Todos" },
@@ -51,6 +55,23 @@ export default function BudgetsScreen() {
   ];
 
   const { budgets, budgetRefresh, budgetLoading } = useBudgets();
+
+  const filteredBudgets = useMemo(() => {
+    return budgets.filter((doc) => {
+      return (
+        doc.customer.name.toLowerCase().includes(search.toLowerCase()) ||
+        doc.sequence_number?.toString().includes(search) ||
+        doc.title.toLowerCase().includes(search.toLowerCase())
+      );
+    });
+  }, [budgets, search]);
+
+  useEffect(() => {
+    const action = searchParams.get("action");
+    if (action === "1") {
+      setIsModalAddVisible(true);
+    }
+  }, [searchParams]);
 
   return (
     <ProtectedRoute>
@@ -71,7 +92,7 @@ export default function BudgetsScreen() {
                   type="primary"
                   icon={<PlusOutlined />}
                   size={screens.sm ? "large" : "middle"}
-                  onClick={() => setIsModalAddVisible(!isModalAddVisible)}
+                  onClick={() => setIsModalAddVisible(true)}
                   block={!screens.md}
                 >
                   Novo orçamento
@@ -83,6 +104,8 @@ export default function BudgetsScreen() {
               <Col xs={24} sm={24} md={8}>
                 <Input
                   placeholder="Buscar orçamento"
+                  onChange={(e) => setSearch(e.target.value)}
+                  value={search}
                   prefix={<SearchOutlined />}
                   size={screens.sm ? "large" : "middle"}
                 />
@@ -114,18 +137,24 @@ export default function BudgetsScreen() {
             <Section title="">
               <Space direction="vertical" size="middle" className="w-full">
                 {budgetLoading ? (
-                  <div>
-                    <Spin indicator={<LoadingOutlined />} />
-                  </div>
+                  <Spin indicator={<LoadingOutlined />} />
                 ) : (
                   <>
-                    {budgets.map((doc, index) => (
-                      <DocumentCard
-                        key={index}
-                        {...doc}
-                        budgetRefresh={budgetRefresh}
+                    {filteredBudgets.length === 0 ? (
+                      <Empty
+                        description={<p>Nenhum orçamento registrado...</p>}
                       />
-                    ))}
+                    ) : (
+                      <>
+                        {filteredBudgets.map((doc, index) => (
+                          <DocumentCard
+                            key={index}
+                            {...doc}
+                            budgetRefresh={budgetRefresh}
+                          />
+                        ))}
+                      </>
+                    )}
                   </>
                 )}
               </Space>
