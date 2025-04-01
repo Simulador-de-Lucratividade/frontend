@@ -3,14 +3,25 @@ export interface ICustomer {
   name: string;
   email: string;
   phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  country: string;
   user_id: string;
   created_at: string;
 }
 
-export interface ICreateCustomer {
+export interface ICreateCustomerDTO {
   name: string;
-  email: string;
+  email?: string;
   phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  country?: string;
+  user_id?: string;
 }
 
 export interface ICustomerResponse {

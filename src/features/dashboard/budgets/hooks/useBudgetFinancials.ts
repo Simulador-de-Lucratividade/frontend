@@ -20,7 +20,7 @@ export const useBudgetFinancials = (
   const [totalValue, setTotalValue] = useState<number>(0);
   const [profitability, setProfitability] = useState<number | null>(null);
   const [profitabilityLoading, setProfitabilityLoading] = useState(false);
-  const [suggestedPrice, setSuggestedPrice] = useState<number | null>(null);
+  const [suggestedPrice, setSuggestedPrice] = useState<string | null>(null);
 
   const calculateTotalCost = useCallback(() => {
     const itemsCost = budgetItems.reduce(
@@ -47,7 +47,8 @@ export const useBudgetFinancials = (
 
     if (newTotalCost > 0) {
       const suggested = newTotalCost * 1.2; // 20% de margem de lucro
-      setSuggestedPrice(suggested);
+      const formattedSuggested = Masks.money((suggested * 100).toString());
+      setSuggestedPrice(formattedSuggested);
       setTotalValue(suggested);
       form.setFieldsValue({
         total_value: Masks.money((suggested * 100).toString()),

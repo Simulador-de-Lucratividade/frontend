@@ -667,8 +667,8 @@ export const NewBudgetModal = ({
                 description={
                   <Space direction="vertical">
                     <Text>
-                      Sugerimos um valor de R$ {suggestedPrice.toFixed(2)} para
-                      obter uma margem de lucro de 20%.
+                      Sugerimos um valor de R$ {suggestedPrice} para obter uma
+                      margem de lucro de 20%.
                     </Text>
                   </Space>
                 }

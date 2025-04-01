@@ -24,7 +24,6 @@ import {
   ArrowLeftOutlined,
   UserOutlined,
   HomeOutlined,
-  CalendarOutlined,
   HistoryOutlined,
   LoadingOutlined,
 } from "@ant-design/icons";
@@ -35,15 +34,22 @@ import { ProtectedRoute } from "@/shared/components/protected-route";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCostumerById } from "../../customers/hooks/useCostumerById";
+import dayjs from "dayjs";
+import { EditCustomerModal } from "../../customers/modals/edit-customer";
+import { useState } from "react";
 
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
 
 export default function CustomerDetailsPage() {
+  const [isModalEditVisible, setIsModalEditVisible] = useState<boolean>(false);
+
   const screens = useBreakpoint();
   const id = useParams().id;
 
-  const { customer, customerLoading } = useCostumerById(id as string);
+  const { customer, customerLoading, customerRefresh } = useCostumerById(
+    id as string
+  );
 
   const dropdownItems: MenuProps["items"] = [
     {
@@ -100,7 +106,7 @@ export default function CustomerDetailsPage() {
               Contato não informado
             </Descriptions.Item>
             <Descriptions.Item label="Cliente desde">
-              {customer?.created_at}
+              {dayjs(customer?.created_at).format("DD/MM/YYYY")}
             </Descriptions.Item>
           </Descriptions>
 
@@ -176,6 +182,7 @@ export default function CustomerDetailsPage() {
                     <Button
                       icon={<EditOutlined />}
                       size={screens.sm ? "large" : "middle"}
+                      onClick={() => setIsModalEditVisible(true)}
                     >
                       Editar
                     </Button>
@@ -215,18 +222,17 @@ export default function CustomerDetailsPage() {
                         </Title>
                         <Space size="small" wrap>
                           <Tag color={"success"}>Ativo</Tag>
-                          <Tag color="blue">Industrial</Tag>
                         </Space>
                       </div>
 
                       <Space size="large" wrap>
                         <Space size="small">
                           <MailOutlined />
-                          <Text>{customer?.email}</Text>
+                          <Text>{customer?.email ?? "Não informado"}</Text>
                         </Space>
                         <Space size="small">
                           <PhoneOutlined />
-                          <Text>{customer?.phone}</Text>
+                          <Text>{customer?.phone ?? "Não informado"}</Text>
                         </Space>
                       </Space>
                     </Space>
@@ -257,18 +263,12 @@ export default function CustomerDetailsPage() {
                       className="w-full"
                     >
                       <div>
-                        <Text type="secondary">Último contato</Text>
-                        <div className="flex items-center mt-1">
-                          <CalendarOutlined className="mr-2 text-gray-500" />
-                          <Text strong>00/00/0000</Text>
-                        </div>
-                      </div>
-
-                      <div>
                         <Text type="secondary">Cliente desde</Text>
                         <div className="flex items-center mt-1">
                           <UserOutlined className="mr-2 text-gray-500" />
-                          <Text strong>{customer?.created_at}</Text>
+                          <Text strong>
+                            {dayjs(customer?.created_at).format("DD/MM/YYYY")}
+                          </Text>
                         </div>
                       </div>
 
@@ -276,7 +276,16 @@ export default function CustomerDetailsPage() {
                         <Text type="secondary">Endereço</Text>
                         <div className="flex items-center mt-1">
                           <HomeOutlined className="mr-2 text-gray-500" />
-                          <Text strong>Endereço não informado</Text>
+                          {customer?.address ? (
+                            <Text strong>
+                              {customer?.address} -{" "}
+                              {customer?.city && customer?.city} |{" "}
+                              {customer?.state && customer?.state} |{" "}
+                              {customer?.country && customer?.country}
+                            </Text>
+                          ) : (
+                            <Text strong>Não informado</Text>
+                          )}
                         </div>
                       </div>
                     </Space>
@@ -294,6 +303,12 @@ export default function CustomerDetailsPage() {
             </Space>
           )}
         </div>
+        <EditCustomerModal
+          isOpen={isModalEditVisible}
+          onClose={() => setIsModalEditVisible(false)}
+          customer={customer}
+          customerRefresh={customerRefresh}
+        />
       </ApplicationLayout>
     </ProtectedRoute>
   );

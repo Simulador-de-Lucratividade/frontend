@@ -108,22 +108,17 @@ export const CustomerCard = ({ customer, customerRefresh }: ICustomerCard) => {
                     </Title>
                     <Space size="small" wrap>
                       <Tag color={"success"}>Ativo</Tag>
-                      <Tag color="blue">Industrial</Tag>
                     </Space>
                   </div>
 
                   <Space size="large" wrap>
                     <Space size="small">
                       <MailOutlined />
-                      <Text>{customer.email}</Text>
+                      <Text>{customer.email ?? "Não informado"}</Text>
                     </Space>
                     <Space size="small">
                       <PhoneOutlined />
-                      <Text>{customer.phone}</Text>
-                    </Space>
-                    <Space size="small">
-                      <Text type="secondary">Último contato:</Text>
-                      <Text>00/00/0000</Text>
+                      <Text>{customer.phone ?? "Não informado"}</Text>
                     </Space>
                   </Space>
                 </Space>

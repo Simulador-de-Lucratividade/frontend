@@ -49,18 +49,16 @@ export const NewCustomerModal = ({
     [form]
   );
 
-  const handleDocument = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, "");
+  const handleCepChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (value === null) return;
 
-    let maskedValue = "";
-    if (value.length <= 11) {
-      maskedValue = Masks.cpf(value);
-    } else {
-      maskedValue = Masks.cnpj(value);
-    }
-
-    form.setFieldsValue({ document: maskedValue });
-  };
+      const formattedValue = Masks.cep(value.toString());
+      form.setFieldsValue({ zipCode: formattedValue });
+    },
+    [form]
+  );
 
   const handleSubmit = async () => {
     await form.validateFields();
@@ -75,6 +73,11 @@ export const NewCustomerModal = ({
         name: values.name,
         email: values.email,
         phone: values.phone,
+        address: values.address,
+        city: values.city,
+        country: values.country,
+        state: values.state,
+        zip_code: values.zipCode,
       })
       .then((res: AxiosResponse<ICustomerResponse>) => {
         notification.success({
@@ -111,7 +114,12 @@ export const NewCustomerModal = ({
       onCancel={onClose}
       width={700}
       footer={[
-        <Button key="back" onClick={onClose}>
+        <Button
+          key="back"
+          onClick={onClose}
+          variant="outlined"
+          className="bg-transparent text-primary"
+        >
           Cancelar
         </Button>,
         <Button
@@ -135,7 +143,7 @@ export const NewCustomerModal = ({
         <Divider orientation="left">Informações Básicas</Divider>
 
         <Row gutter={16}>
-          <Col xs={24} md={16}>
+          <Col xs={"100%"}>
             <Form.Item
               name="name"
               label="Nome da Empresa"
@@ -145,24 +153,13 @@ export const NewCustomerModal = ({
                   message: "Por favor, informe o nome da empresa",
                 },
               ]}
+              className="w-full"
             >
-              <Input prefix={<UserOutlined />} placeholder="Nome da empresa" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={8}>
-            <Form.Item
-              name="type"
-              label="Tipo de Cliente"
-              rules={[
-                { required: true, message: "Selecione o tipo de cliente" },
-              ]}
-            >
-              <Select placeholder="Selecione o tipo">
-                <Option value="Corporativo">Corporativo</Option>
-                <Option value="Varejo">Varejo</Option>
-                <Option value="Industrial">Industrial</Option>
-                <Option value="Serviços">Serviços</Option>
-              </Select>
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="Nome da empresa"
+                className="h-10 w-full"
+              />
             </Form.Item>
           </Col>
         </Row>
@@ -173,49 +170,28 @@ export const NewCustomerModal = ({
               name="email"
               label="Email"
               rules={[
-                { required: true, message: "Por favor, informe o email" },
+                { required: false },
                 { type: "email", message: "Email inválido" },
               ]}
             >
-              <Input prefix={<MailOutlined />} placeholder="Email de contato" />
+              <Input
+                prefix={<MailOutlined />}
+                placeholder="Email de contato"
+                className="h-10"
+              />
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>
             <Form.Item
               name="phone"
               label="Telefone"
-              rules={[
-                { required: true, message: "Por favor, informe o telefone" },
-              ]}
+              rules={[{ required: false }]}
             >
               <Input
                 prefix={<PhoneOutlined />}
                 onChange={(e) => handlePhoneChange(e)}
                 placeholder="(00) 00000-0000"
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col xs={24} md={12}>
-            <Form.Item
-              name="status"
-              label="Status"
-              rules={[{ required: true, message: "Selecione o status" }]}
-            >
-              <Select placeholder="Selecione o status">
-                <Option value="active">Ativo</Option>
-                <Option value="inactive">Inativo</Option>
-                <Option value="prospect">Prospecto</Option>
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item name="document" label="CNPJ/CPF">
-              <Input
-                placeholder="00.000.000/0000-00"
-                onChange={handleDocument}
+                className="h-10"
               />
             </Form.Item>
           </Col>
@@ -226,12 +202,16 @@ export const NewCustomerModal = ({
         <Row gutter={16}>
           <Col xs={24} md={16}>
             <Form.Item name="address" label="Endereço">
-              <Input prefix={<HomeOutlined />} placeholder="Rua, número" />
+              <Input
+                prefix={<HomeOutlined />}
+                placeholder="Rua, número"
+                className="h-10"
+              />
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>
             <Form.Item name="city" label="Cidade">
-              <Input placeholder="Cidade" />
+              <Input placeholder="Cidade" className="h-10" />
             </Form.Item>
           </Col>
         </Row>
@@ -239,34 +219,52 @@ export const NewCustomerModal = ({
         <Row gutter={16}>
           <Col xs={24} md={8}>
             <Form.Item name="state" label="Estado">
-              <Select placeholder="Selecione o estado">
-                <Option value="SP">São Paulo</Option>
-                <Option value="RJ">Rio de Janeiro</Option>
+              <Select placeholder="Selecione o estado" className="h-10">
+                <Option value="AC">Acre</Option>
+                <Option value="AL">Alagoas</Option>
+                <Option value="AP">Amapá</Option>
+                <Option value="AM">Amazonas</Option>
+                <Option value="BA">Bahia</Option>
+                <Option value="CE">Ceará</Option>
+                <Option value="DF">Distrito Federal</Option>
+                <Option value="ES">Espírito Santo</Option>
+                <Option value="GO">Goiás</Option>
+                <Option value="MA">Maranhão</Option>
+                <Option value="MT">Mato Grosso</Option>
+                <Option value="MS">Mato Grosso do Sul</Option>
                 <Option value="MG">Minas Gerais</Option>
-                <Option value="RS">Rio Grande do Sul</Option>
+                <Option value="PA">Pará</Option>
+                <Option value="PB">Paraíba</Option>
                 <Option value="PR">Paraná</Option>
+                <Option value="PE">Pernambuco</Option>
+                <Option value="PI">Piauí</Option>
+                <Option value="RJ">Rio de Janeiro</Option>
+                <Option value="RN">Rio Grande do Norte</Option>
+                <Option value="RS">Rio Grande do Sul</Option>
+                <Option value="RO">Rondônia</Option>
+                <Option value="RR">Roraima</Option>
                 <Option value="SC">Santa Catarina</Option>
-                {/* Adicione outros estados conforme necessário */}
+                <Option value="SP">São Paulo</Option>
+                <Option value="SE">Sergipe</Option>
+                <Option value="TO">Tocantins</Option>
               </Select>
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>
             <Form.Item name="zipCode" label="CEP">
-              <Input placeholder="00000-000" />
+              <Input
+                placeholder="00000-000"
+                className="h-10"
+                onChange={(e) => handleCepChange(e)}
+              />
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>
             <Form.Item name="country" label="País" initialValue="Brasil">
-              <Input />
+              <Input className="h-10" />
             </Form.Item>
           </Col>
         </Row>
-
-        <Divider orientation="left">Informações Adicionais</Divider>
-
-        <Form.Item name="notes" label="Observações">
-          <Input.TextArea rows={4} placeholder="Observações sobre o cliente" />
-        </Form.Item>
       </Form>
     </Modal>
   );

@@ -1,7 +1,7 @@
 import { AxiosResponse } from "axios";
 import api from "@/shared/services/api.service";
 import {
-  ICreateCustomer,
+  ICreateCustomerDTO,
   ICustomerResponse,
   IGetAllCustomersResponse,
 } from "../interface/ICustomer";
@@ -10,21 +10,45 @@ const create = async ({
   name,
   email,
   phone,
-}: ICreateCustomer): Promise<AxiosResponse<ICustomerResponse>> =>
+  address,
+  city,
+  country,
+  state,
+  zip_code,
+}: ICreateCustomerDTO): Promise<AxiosResponse<ICustomerResponse>> =>
   await api.post("/customer", {
     name,
     email,
     phone,
+    address,
+    city,
+    country,
+    state,
+    zip_code,
   });
 
 const update = async (
   customer_id: string,
-  { name, email, phone }: ICreateCustomer
+  {
+    name,
+    email,
+    phone,
+    address,
+    city,
+    country,
+    state,
+    zip_code,
+  }: ICreateCustomerDTO
 ): Promise<AxiosResponse<ICustomerResponse>> =>
   await api.put(`/customer/${customer_id}`, {
     name,
     email,
     phone,
+    address,
+    city,
+    country,
+    state,
+    zip_code,
   });
 
 const getById = async (
