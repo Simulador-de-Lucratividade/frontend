@@ -1,3 +1,5 @@
+import type React from "react";
+
 import {
   Card,
   Row,
@@ -8,21 +10,18 @@ import {
   Button,
   Dropdown,
   Grid,
-  MenuProps,
+  type MenuProps,
+  Tooltip,
 } from "antd";
 import { BsThreeDotsVertical } from "react-icons/bs";
 
-import {
-  EditOutlined,
-  DeleteOutlined,
-  FileTextOutlined,
-} from "@ant-design/icons";
-import { IProduct } from "../interface/IProduct";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import type { IProduct } from "../interface/IProduct";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ConfirmDeleteModal } from "@/shared/components/delete-modal";
 import { productService } from "../services/product.service";
 import Masks from "@/shared/utils/masks";
+import { EditProductModal } from "../modals/edit-product";
 
 const { Text } = Typography;
 
@@ -38,24 +37,21 @@ const dropdownItems: MenuProps["items"] = [
     key: "1",
     label: "Editar",
     icon: <EditOutlined />,
-  },
-  {
-    key: "2",
-    label: "Criar orçamento",
-    icon: <FileTextOutlined />,
+    className: "px-10 py-3",
   },
   {
     key: "3",
     label: "Excluir",
     icon: <DeleteOutlined />,
     danger: true,
+    className: "px-10 py-3",
   },
 ];
 
 export const ProductCard = ({ product, productRefresh }: IProductCard) => {
   const screens = useBreakpoint();
-  const router = useRouter();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
   const handleMenuClick = (e: {
     key: string;
@@ -66,9 +62,13 @@ export const ProductCard = ({ product, productRefresh }: IProductCard) => {
     if (e.key === "3") {
       setIsDeleteModalOpen(true);
     } else if (e.key === "1") {
-      router.push(`/orcamentos/${product.id}/editar`);
+      setIsEditModalOpen(true);
     }
   };
+
+  const profitMargin = product.sale_price - product.acquisition_cost;
+  const profitPercentage = (profitMargin / product.acquisition_cost) * 100;
+  const formattedProfitPercentage = profitPercentage.toFixed(0);
 
   return (
     <Card className="w-full transition-all duration-200 px-4 py-3">
@@ -132,9 +132,27 @@ export const ProductCard = ({ product, productRefresh }: IProductCard) => {
               screens.xs ? "w-full justify-between" : ""
             }`}
           >
-            <Text strong className={screens.sm ? "text-base" : "text-sm"}>
-              {Masks.money(product.acquisition_cost.toString())}
-            </Text>
+            <Tooltip
+              title={`Margem de lucro: ${formattedProfitPercentage}%`}
+              placement="bottom"
+            >
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <Text strong className={screens.sm ? "text-base" : "text-sm"}>
+                    {Masks.money(product.sale_price.toString())}
+                  </Text>
+                  <Tag color="success" className="m-0">
+                    {formattedProfitPercentage}%
+                  </Tag>
+                </div>
+                <Text
+                  type="secondary"
+                  className={screens.sm ? "text-sm" : "text-base"}
+                >
+                  Custo: {Masks.money(product.acquisition_cost.toString())}
+                </Text>
+              </div>
+            </Tooltip>
             <Dropdown
               menu={{ items: dropdownItems, onClick: handleMenuClick }}
               placement={screens.xs ? "bottomCenter" : "bottomRight"}
@@ -150,6 +168,7 @@ export const ProductCard = ({ product, productRefresh }: IProductCard) => {
                   height: screens.sm ? 40 : 32,
                   width: screens.sm ? 40 : 32,
                 }}
+                aria-label="Opções do produto"
               >
                 <BsThreeDotsVertical
                   className={screens.sm ? "w-5 h-5" : "w-4 h-4"}
@@ -168,6 +187,12 @@ export const ProductCard = ({ product, productRefresh }: IProductCard) => {
         itemType="Produto"
         identifierValue={product.name}
         deleteFunction={productService.remove}
+      />
+      <EditProductModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        product={product}
+        productRefresh={productRefresh}
       />
     </Card>
   );

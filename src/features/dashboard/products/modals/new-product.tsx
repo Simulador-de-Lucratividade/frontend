@@ -63,6 +63,7 @@ export const NewProductModal = ({
           description: `O produto ${res.data.product.name} foi cadastrado com sucesso!`,
         });
         onClose();
+        form.resetFields();
         productRefresh();
       })
       .catch((error) => {
@@ -200,8 +201,7 @@ export const NewProductModal = ({
               label="Descrição"
               rules={[
                 {
-                  required: true,
-                  message: "Por favor, informe a descrição do produto",
+                  required: false,
                 },
               ]}
             >

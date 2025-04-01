@@ -8,15 +8,15 @@ import {
   Dropdown,
   Grid,
 } from "antd";
-import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { IService } from "../interface/IServices";
 import { ConfirmDeleteModal } from "@/shared/components/delete-modal";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Masks from "@/shared/utils/masks";
 import { additionalServicesService } from "../services/services.service";
+import { EditServiceModal } from "../modals/edit-service";
 
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -28,15 +28,10 @@ interface IServiceCardProps {
 
 export const ServiceCard = ({ service, serviceRefresh }: IServiceCardProps) => {
   const screens = useBreakpoint();
-  const router = useRouter();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 
   const dropdownItems: MenuProps["items"] = [
-    {
-      key: "1",
-      label: "Ver detalhes",
-      icon: <EyeOutlined />,
-    },
     {
       key: "2",
       label: "Editar serviço",
@@ -61,8 +56,8 @@ export const ServiceCard = ({ service, serviceRefresh }: IServiceCardProps) => {
 
     if (e.key === "3") {
       setIsDeleteModalOpen(true);
-    } else if (e.key === "1") {
-      router.push(`/orcamentos/${service.id}/editar`);
+    } else if (e.key === "2") {
+      setIsEditModalOpen(true);
     }
   };
 
@@ -95,7 +90,7 @@ export const ServiceCard = ({ service, serviceRefresh }: IServiceCardProps) => {
                 type="secondary"
                 className={screens.sm ? "text-sm" : "text-xs"}
               >
-                •
+                {service.description ?? "Nenhuma descrição informada"}
               </Text>
             </Space>
           </Space>
@@ -150,6 +145,12 @@ export const ServiceCard = ({ service, serviceRefresh }: IServiceCardProps) => {
         itemType="Serviço"
         identifierValue={service.name}
         deleteFunction={additionalServicesService.remove}
+      />
+      <EditServiceModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        service={service}
+        serviceRefresh={serviceRefresh}
       />
     </Card>
   );

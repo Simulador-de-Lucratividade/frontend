@@ -116,7 +116,7 @@ export const NewServiceModal = ({
         }}
       >
         <Row gutter={16}>
-          <Col xs={24} md={16}>
+          <Col xs={24} md={32}>
             <Form.Item
               name="name"
               label="Nome do Serviço"
@@ -126,23 +126,25 @@ export const NewServiceModal = ({
                   message: "Por favor, informe o nome do serviço",
                 },
               ]}
+              className="w-full"
             >
-              <Input placeholder="Nome do serviço" />
+              <Input placeholder="Nome do serviço" className="h-10 w-full" />
             </Form.Item>
           </Col>
         </Row>
 
         <Row gutter={16}>
-          <Col xs={24} md={12}>
+          <Col xs={24} md={32}>
             <Form.Item
               name="cost"
               label="Preço (R$)"
               rules={[
                 { required: true, message: "Por favor, informe o preço" },
               ]}
+              className="w-full"
             >
               <Input
-                className="w-full"
+                className="w-full h-10"
                 placeholder="R$ 0,00"
                 onChange={(value) => handleMoneyChange(value.target.value)}
               />
@@ -155,8 +157,7 @@ export const NewServiceModal = ({
           label="Descrição"
           rules={[
             {
-              required: true,
-              message: "Por favor, informe a descrição do serviço",
+              required: false,
             },
           ]}
         >
